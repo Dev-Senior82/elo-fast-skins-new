@@ -16,18 +16,37 @@ export async function POST(request) {
       )
     }
 
+    // garante que o valor seja número
+    const transactionAmount = parseFloat(amount)
+
+    if (isNaN(transactionAmount)) {
+      return NextResponse.json(
+        { error: 'Valor de pagamento inválido' },
+        { status: 400 }
+      )
+    }
+
+    // valida email
+    const email =
+      payer_email && payer_email.includes('@')
+        ? payer_email
+        : 'cliente@elofastskins.com'
+
     const payment = new Payment(client)
 
     const body = {
-      transaction_amount: parseFloat(amount),
+      transaction_amount: transactionAmount,
       description: description || `Pedido #${order_id}`,
       payment_method_id: 'pix',
+
       payer: {
-        email: payer_email || 'cliente@elofastskins.com',
+        email: email,
       },
+
       metadata: {
         order_id: order_id,
       },
+
       notification_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/mercadopago-webhook`,
     }
 
@@ -47,6 +66,7 @@ export async function POST(request) {
     })
   } catch (error) {
     console.error('Erro ao criar pagamento:', error)
+
     return NextResponse.json(
       { error: error.message || 'Erro ao criar pagamento PIX' },
       { status: 500 }
