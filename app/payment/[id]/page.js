@@ -79,7 +79,7 @@ export default function PaymentPage() {
           order_id: order.id,
           amount: order.final_price || order.price,
           description: `${order.current_rank} → ${order.desired_rank}`,
-          payer_email: order.client_contact || 'cliente@elofastskins.com',
+          payer_email: 'slayvier1@gmail.com',
         }),
       })
 
