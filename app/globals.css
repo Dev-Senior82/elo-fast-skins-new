@@ -140,3 +140,24 @@
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
+
+/* Cursores customizados do League of Legends */
+* {
+  cursor: url('/cursors/normal.cur'), auto !important;
+}
+
+a, button, [role="button"], input[type="submit"], input[type="button"] {
+  cursor: url('/cursors/person.cur'), pointer !important;
+}
+
+input[type="text"], input[type="email"], input[type="password"], input[type="number"], textarea, select {
+  cursor: url('/cursors/alt.cur'), text !important;
+}
+
+[disabled], .disabled {
+  cursor: url('/cursors/unavailable.cur'), not-allowed !important;
+}
+
+[title]:hover, .help, [data-tooltip] {
+  cursor: url('/cursors/help.cur'), help !important;
+}

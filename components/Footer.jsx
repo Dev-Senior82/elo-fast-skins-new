@@ -79,7 +79,7 @@ export default function Footer() {
               </a>
               <div className="flex gap-3 pt-2">
                 <a
-                  href="https://discord.gg/akbFh3wJ"
+                  href="https://discord.gg/DMcHkNwKHb"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="h-9 w-9 rounded-full bg-primary-500/10 hover:bg-primary-500/20 flex items-center justify-center transition-colors"

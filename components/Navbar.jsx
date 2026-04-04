@@ -56,7 +56,7 @@ export default function Navbar() {
     { label: 'Boosters', href: '/boosters' },
     { label: 'Contas', href: '/contas' },
     { label: 'FAQ', href: '/faq' },
-    { label: 'Discord', href: 'https://discord.gg/akbFh3wJ', external: true },
+    { label: 'Discord', href: 'https://discord.gg/DMcHkNwKHb', external: true },
     { label: 'Suporte', href: '/suporte' },
   ]
 
@@ -78,7 +78,7 @@ export default function Navbar() {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-6">
-          {navItems.slice(0, -4).map((item) => (
+          {navItems.slice(0, 3).map((item) => (
             item.external ? (
               <a
                 key={item.href}
