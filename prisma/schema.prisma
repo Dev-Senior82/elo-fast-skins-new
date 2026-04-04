@@ -1,0 +1,27 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Modelo de Depoimentos dos Clientes
+model Testimonial {
+  id          String   @id @default(uuid())
+  clientName  String
+  avatarUrl   String?
+  serviceType String
+  rating      Int      @db.SmallInt // 1-5 estrelas
+  comment     String   @db.Text
+  createdAt   DateTime @default(now())
+  isApproved  Boolean  @default(false)
+
+  @@index([isApproved, createdAt])
+  @@map("testimonials")
+}
