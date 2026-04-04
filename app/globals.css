@@ -140,3 +140,44 @@
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
+
+/* ===== CURSOR PERSONALIZADO GAMER ===== */
+
+/* Cursor padrão - Mira gamer */
+* {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='3' fill='%23FF5E4D' /%3E%3Ccircle cx='16' cy='16' r='8' stroke='%23FF5E4D' stroke-width='2' fill='none' /%3E%3Cline x1='16' y1='0' x2='16' y2='8' stroke='%23FF5E4D' stroke-width='2' /%3E%3Cline x1='16' y1='24' x2='16' y2='32' stroke='%23FF5E4D' stroke-width='2' /%3E%3Cline x1='0' y1='16' x2='8' y2='16' stroke='%23FF5E4D' stroke-width='2' /%3E%3Cline x1='24' y1='16' x2='32' y2='16' stroke='%23FF5E4D' stroke-width='2' /%3E%3C/svg%3E") 16 16, crosshair;
+}
+
+/* Cursor pointer - Espada/Click */
+a, button, [role="button"], input[type="submit"], input[type="button"], 
+.cursor-pointer, [onclick], select, label[for] {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M8 4 L24 16 L16 16 L20 28 L16 28 L12 16 L8 20 Z' fill='%23F97316' stroke='%23FFF' stroke-width='1.5' /%3E%3C/svg%3E") 8 4, pointer !important;
+}
+
+/* Cursor hover em cards e elementos interativos */
+.glass-card:hover, .hover\:border-primary-500\/50:hover, 
+.hover\:border-orange-500\/50:hover, .hover\:border-red-500\/50:hover {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M8 4 L24 16 L16 16 L20 28 L16 28 L12 16 L8 20 Z' fill='%23F97316' stroke='%23FFF' stroke-width='1.5' /%3E%3Cpath d='M24 4 L28 8 L12 24 L8 20 Z' fill='%233B82F6' stroke='%23FFF' stroke-width='1' transform='translate(2, 2) scale(0.5)' /%3E%3C/svg%3E") 8 4, pointer !important;
+}
+
+/* Cursor para inputs de texto */
+input[type="text"], input[type="email"], input[type="password"], 
+input[type="search"], input[type="tel"], input[type="url"], 
+input[type="number"], textarea {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Crect x='14' y='4' width='4' height='24' fill='%233B82F6' rx='1' /%3E%3Crect x='10' y='4' width='12' height='3' fill='%233B82F6' rx='1' /%3E%3Crect x='10' y='25' width='12' height='3' fill='%233B82F6' rx='1' /%3E%3C/svg%3E") 16 16, text !important;
+}
+
+/* Cursor de carregamento */
+.loading, [aria-busy="true"], .animate-spin {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='12' stroke='%239333EA' stroke-width='3' fill='none' stroke-dasharray='60 20' %3E%3CanimateTransform attributeName='transform' type='rotate' from='0 16 16' to='360 16 16' dur='1s' repeatCount='indefinite' /%3E%3C/circle%3E%3C/svg%3E") 16 16, wait !important;
+}
+
+/* Cursor desabilitado */
+[disabled], .disabled, .opacity-50[disabled] {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='12' stroke='%23EF4444' stroke-width='3' fill='none' /%3E%3Cline x1='8' y1='8' x2='24' y2='24' stroke='%23EF4444' stroke-width='3' /%3E%3C/svg%3E") 16 16, not-allowed !important;
+}
+
+/* Cursor grab para elementos arrastáveis */
+.draggable, [draggable="true"] {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Crect x='8' y='6' width='4' height='4' fill='%2310B981' rx='1' /%3E%3Crect x='14' y='6' width='4' height='4' fill='%2310B981' rx='1' /%3E%3Crect x='20' y='6' width='4' height='4' fill='%2310B981' rx='1' /%3E%3Crect x='8' y='14' width='4' height='4' fill='%2310B981' rx='1' /%3E%3Crect x='14' y='14' width='4' height='4' fill='%2310B981' rx='1' /%3E%3Crect x='20' y='14' width='4' height='4' fill='%2310B981' rx='1' /%3E%3Crect x='8' y='22' width='4' height='4' fill='%2310B981' rx='1' /%3E%3Crect x='14' y='22' width='4' height='4' fill='%2310B981' rx='1' /%3E%3Crect x='20' y='22' width='4' height='4' fill='%2310B981' rx='1' /%3E%3C/svg%3E") 16 16, grab !important;
+}
