@@ -188,7 +188,7 @@ export default function ValorantCalculator() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Calculator className="h-5 w-5 text-red-500" />
-          Calculadora Valorant
+          Valorant Valores
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">

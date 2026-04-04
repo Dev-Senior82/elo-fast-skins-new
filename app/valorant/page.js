@@ -36,15 +36,25 @@ export default function ValorantPage() {
       </div>
 
       {/* Grid Principal */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16 relative">
         {/* Calculadora */}
         <div className="lg:col-span-2">
           <ValorantCalculator />
         </div>
 
-        {/* Vantagens */}
-        <div className="space-y-4">
-          <Card className="glass-card border-red-500/20">
+        {/* Lado direito com vantagens + Chamber */}
+        <div className="space-y-4 relative">
+          {/* Imagem do Chamber ao fundo */}
+          <div className="absolute -right-20 -top-20 opacity-20 hidden xl:block pointer-events-none">
+            <img 
+              src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/yjlvmezw_Chamber.png"
+              alt="Chamber"
+              className="w-96 h-auto"
+              style={{ filter: 'drop-shadow(0 0 20px rgba(255, 70, 85, 0.5))' }}
+            />
+          </div>
+
+          <Card className="glass-card border-red-500/20 relative z-10">
             <CardContent className="p-6">
               <Shield className="h-10 w-10 text-red-500 mb-3" />
               <h3 className="font-bold text-lg mb-2">100% Seguro</h3>
@@ -54,7 +64,7 @@ export default function ValorantPage() {
             </CardContent>
           </Card>
 
-          <Card className="glass-card border-red-500/20">
+          <Card className="glass-card border-red-500/20 relative z-10">
             <CardContent className="p-6">
               <Zap className="h-10 w-10 text-red-500 mb-3" />
               <h3 className="font-bold text-lg mb-2">Entrega Rápida</h3>
@@ -64,7 +74,7 @@ export default function ValorantPage() {
             </CardContent>
           </Card>
 
-          <Card className="glass-card border-red-500/20">
+          <Card className="glass-card border-red-500/20 relative z-10">
             <CardContent className="p-6">
               <Target className="h-10 w-10 text-red-500 mb-3" />
               <h3 className="font-bold text-lg mb-2">Suporte 24/7</h3>

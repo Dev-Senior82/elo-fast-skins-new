@@ -80,7 +80,7 @@ export default function Navbar() {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-6">
-          {navItems.map((item) => (
+          {navItems.slice(0, -4).map((item) => (
             item.external ? (
               <a
                 key={item.href}
@@ -112,6 +112,25 @@ export default function Navbar() {
             <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           </Button>
+
+          {/* Ícones dos Jogos */}
+          <Link href="/precos" className="hover:opacity-80 transition-opacity" title="League of Legends">
+            <Avatar className="h-10 w-10 border-2 border-blue-500 hover:border-blue-400 transition-all cursor-pointer">
+              <AvatarImage 
+                src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/judztdm9_league%20of%20legends.png" 
+                alt="League of Legends" 
+              />
+            </Avatar>
+          </Link>
+
+          <Link href="/valorant" className="hover:opacity-80 transition-opacity" title="Valorant">
+            <Avatar className="h-10 w-10 border-2 border-red-500 hover:border-red-400 transition-all cursor-pointer">
+              <AvatarImage 
+                src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/pq1wvtfz_valorant.png" 
+                alt="Valorant" 
+              />
+            </Avatar>
+          </Link>
 
           {/* Cliente Logado ou Botão de Login */}
           {clientUser ? (
