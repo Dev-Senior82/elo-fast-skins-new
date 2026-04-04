@@ -42,11 +42,11 @@ export default function ValorantPage() {
           <ValorantCalculator />
         </div>
 
-        {/* Imagem do Chamber */}
+        {/* Imagem da Jett */}
         <div className="hidden lg:flex items-center justify-center relative">
           <img 
-            src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/yjlvmezw_Chamber.png"
-            alt="Chamber - Valorant"
+            src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/oxdqn643_jett.png"
+            alt="Jett - Valorant"
             className="w-full max-w-md h-auto"
             style={{ 
               filter: 'drop-shadow(0 0 40px rgba(255, 70, 85, 0.6))',

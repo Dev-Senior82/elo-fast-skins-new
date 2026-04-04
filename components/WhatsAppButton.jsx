@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { MessageCircle } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function WhatsAppButton() {
   const [showTooltip, setShowTooltip] = useState(true)
@@ -24,13 +25,19 @@ export default function WhatsAppButton() {
         </div>
       )}
       
-      {/* Botão WhatsApp */}
-      <div className="bg-green-500 hover:bg-green-600 text-white rounded-full p-5 shadow-2xl transition-all hover:scale-110 flex items-center justify-center">
-        <MessageCircle className="h-10 w-10" />
+      {/* Botão WhatsApp com sua imagem */}
+      <div className="relative hover:scale-110 transition-all">
+        <Image
+          src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/oomvayjf_bot%C3%A3o%20de%20whats%20app.png"
+          alt="WhatsApp"
+          width={80}
+          height={80}
+          className="drop-shadow-2xl"
+        />
       </div>
       
       {/* Pulse effect */}
-      <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-20"></div>
+      <div className="absolute inset-0 bg-green-500/30 rounded-full animate-ping"></div>
     </Link>
   )
 }

@@ -121,10 +121,10 @@ export default function ContasPage() {
                 </div>
                 <Button
                   asChild
-                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                  className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-white font-bold shadow-lg hover:shadow-cyan-500/50 transition-all hover:scale-105"
                 >
                   <Link href={`https://wa.me/5582999646622?text=Olá! Quero comprar a conta: ${encodeURIComponent(account.title)}`} target="_blank">
-                    Comprar
+                    Comprar Agora
                   </Link>
                 </Button>
               </CardFooter>

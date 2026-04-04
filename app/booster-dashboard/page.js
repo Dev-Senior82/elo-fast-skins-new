@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CheckCircle2, Clock, Trophy, MessageSquare, LogOut } from 'lucide-react'
-import { getBoosterOrders, acceptOrder, completeOrder } from '@/app/actions/boosters'
+import { getAllOrders, acceptOrder, completeOrder } from '@/app/actions/boosters'
 import { useToast } from '@/hooks/use-toast'
 import Link from 'next/link'
 
@@ -27,11 +27,12 @@ export default function BoosterDashboardPage() {
 
     const userData = JSON.parse(storedUser)
     setUser(userData)
-    loadOrders(userData.id)
+    loadOrders()
   }, [])
 
-  const loadOrders = async (boosterId) => {
-    const result = await getBoosterOrders(boosterId)
+  const loadOrders = async () => {
+    // Carregar TODOS os pedidos para que qualquer booster possa aceitar
+    const result = await getAllOrders()
     if (result.success) {
       setOrders(result.data)
     }
@@ -45,7 +46,7 @@ export default function BoosterDashboardPage() {
         title: 'Pedido aceito!',
         description: 'O pedido foi aceito com sucesso.',
       })
-      loadOrders(user.id)
+      loadOrders()
     } else {
       toast({
         title: 'Erro',
@@ -62,7 +63,7 @@ export default function BoosterDashboardPage() {
         title: 'Pedido concluído!',
         description: 'O pedido foi marcado como concluído.',
       })
-      loadOrders(user.id)
+      loadOrders()
     } else {
       toast({
         title: 'Erro',

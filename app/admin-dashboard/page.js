@@ -174,14 +174,21 @@ export default function AdminDashboardPage() {
           </h1>
           <p className="text-muted-foreground">Olá, {user.name}! Você tem acesso total ao sistema.</p>
         </div>
-        <Button
-          onClick={handleLogout}
-          variant="outline"
-          className="border-red-500/50 hover:bg-red-500/10"
-        >
-          <LogOut className="h-4 w-4 mr-2" />
-          Sair
-        </Button>
+        <div className="flex gap-3">
+          <Button asChild variant="outline" className="border-cyan-500/50 hover:bg-cyan-500/10">
+            <Link href="/admin-contas">
+              Gerenciar Contas
+            </Link>
+          </Button>
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            className="border-red-500/50 hover:bg-red-500/10"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sair
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">

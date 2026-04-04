@@ -80,9 +80,9 @@ export default async function HomePage() {
                 <img
                   src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/s1dqr3eg_elofast.png"
                   alt="EloFast Mascote"
-                  className="w-full max-w-2xl drop-shadow-2xl animate-float"
+                  className="w-full max-w-3xl drop-shadow-2xl animate-float"
                   style={{
-                    filter: 'drop-shadow(0 0 40px rgba(255, 94, 77, 0.5))'
+                    filter: 'drop-shadow(0 0 50px rgba(255, 94, 77, 0.6))'
                   }}
                 />
               </div>
