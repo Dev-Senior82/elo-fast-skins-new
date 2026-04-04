@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Menu, X, Moon, Sun, User, LogOut } from 'lucide-react'
+import { Menu, X, Moon, Sun, User, LogOut, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTheme } from 'next-themes'
 import { useRouter } from 'next/navigation'
@@ -21,20 +21,33 @@ import NotificationBell from '@/components/NotificationBell'
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [clientUser, setClientUser] = useState(null)
+  const [boosterUser, setBoosterUser] = useState(null)
   const { theme, setTheme } = useTheme()
   const router = useRouter()
 
   useEffect(() => {
     // Verificar se cliente está logado
-    const storedUser = localStorage.getItem('client_user')
-    if (storedUser) {
-      setClientUser(JSON.parse(storedUser))
+    const storedClient = localStorage.getItem('client_user')
+    if (storedClient) {
+      setClientUser(JSON.parse(storedClient))
+    }
+    
+    // Verificar se booster está logado
+    const storedBooster = localStorage.getItem('booster_user')
+    if (storedBooster) {
+      setBoosterUser(JSON.parse(storedBooster))
     }
   }, [])
 
   const handleClientLogout = () => {
     localStorage.removeItem('client_user')
     setClientUser(null)
+    router.push('/')
+  }
+  
+  const handleBoosterLogout = () => {
+    localStorage.removeItem('booster_user')
+    setBoosterUser(null)
     router.push('/')
   }
 
@@ -133,18 +146,52 @@ export default function Navbar() {
             </Button>
           )}
 
-          {/* Ícone Booster - Pantheon */}
-          <Link href="/booster-login" className="hover:opacity-80 transition-opacity">
-            <Avatar className="h-10 w-10 border-2 border-primary-500 hover:border-orange-500 transition-all cursor-pointer">
-              <AvatarImage 
-                src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/vbhm79qm_ee238998055501954e9adec926d18dfd.jpg" 
-                alt="Login Booster" 
-              />
-              <AvatarFallback className="bg-gradient-to-br from-primary-500 to-orange-500 text-white text-xs">
-                🛡️
-              </AvatarFallback>
-            </Avatar>
-          </Link>
+          {/* Booster - Ícone ou Dropdown se logado */}
+          {boosterUser ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="gap-2 hover:bg-primary-500/10">
+                  <Avatar className="h-8 w-8 border-2 border-primary-500">
+                    <AvatarImage 
+                      src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/vbhm79qm_ee238998055501954e9adec926d18dfd.jpg" 
+                      alt={boosterUser.name} 
+                    />
+                    <AvatarFallback className="bg-gradient-to-br from-primary-500 to-orange-500 text-white text-xs">
+                      {boosterUser.name?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden lg:inline">{boosterUser.name}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuLabel>Painel Booster</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href={boosterUser.is_admin ? "/admin-dashboard" : "/booster-dashboard"} className="cursor-pointer">
+                    <Shield className="h-4 w-4 mr-2" />
+                    {boosterUser.is_admin ? "Admin" : "Dashboard"}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleBoosterLogout} className="text-red-600 cursor-pointer">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link href="/booster-login" className="hover:opacity-80 transition-opacity">
+              <Avatar className="h-10 w-10 border-2 border-primary-500 hover:border-orange-500 transition-all cursor-pointer">
+                <AvatarImage 
+                  src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/vbhm79qm_ee238998055501954e9adec926d18dfd.jpg" 
+                  alt="Login Booster" 
+                />
+                <AvatarFallback className="bg-gradient-to-br from-primary-500 to-orange-500 text-white text-xs">
+                  🛡️
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+          )}
 
           <Button
             asChild
@@ -237,23 +284,54 @@ export default function Navbar() {
               </Button>
             )}
             
-            {/* Booster Login */}
-            <Link 
-              href="/booster-login" 
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-4 py-2 hover:bg-primary-500/10 rounded-lg transition-colors"
-            >
-              <Avatar className="h-8 w-8 border-2 border-primary-500">
-                <AvatarImage 
-                  src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/vbhm79qm_ee238998055501954e9adec926d18dfd.jpg" 
-                  alt="Login Booster" 
-                />
-                <AvatarFallback className="bg-gradient-to-br from-primary-500 to-orange-500 text-white text-xs">
-                  🛡️
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm font-medium">Login Booster</span>
-            </Link>
+            {/* Booster - Logado ou Login */}
+            {boosterUser ? (
+              <>
+                <Link
+                  href={boosterUser.is_admin ? "/admin-dashboard" : "/booster-dashboard"}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2 hover:bg-primary-500/10 rounded-lg transition-colors"
+                >
+                  <Avatar className="h-8 w-8 border-2 border-primary-500">
+                    <AvatarImage 
+                      src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/vbhm79qm_ee238998055501954e9adec926d18dfd.jpg" 
+                      alt={boosterUser.name} 
+                    />
+                    <AvatarFallback className="bg-gradient-to-br from-primary-500 to-orange-500 text-white text-xs">
+                      {boosterUser.name?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium">{boosterUser.name}</span>
+                </Link>
+                <button
+                  onClick={() => {
+                    handleBoosterLogout()
+                    setIsOpen(false)
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-500/10 rounded-lg"
+                >
+                  <LogOut className="h-4 w-4 inline mr-2" />
+                  Sair (Booster)
+                </button>
+              </>
+            ) : (
+              <Link 
+                href="/booster-login" 
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 px-4 py-2 hover:bg-primary-500/10 rounded-lg transition-colors"
+              >
+                <Avatar className="h-8 w-8 border-2 border-primary-500">
+                  <AvatarImage 
+                    src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/vbhm79qm_ee238998055501954e9adec926d18dfd.jpg" 
+                    alt="Login Booster" 
+                  />
+                  <AvatarFallback className="bg-gradient-to-br from-primary-500 to-orange-500 text-white text-xs">
+                    🛡️
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm font-medium">Login Booster</span>
+              </Link>
+            )}
             
             <Button
               asChild

@@ -75,14 +75,14 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <div className="flex-1">
-              <Image
-                src="https://customer-assets.emergentagent.com/job_velocity-boost-7/artifacts/vq9n2jqi_image.png"
-                alt="Elo Fast Skins"
-                width={500}
-                height={500}
-                className="animate-glow-pulse drop-shadow-2xl"
-                priority
+            <div className="flex-1 flex justify-center">
+              <video
+                src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/yt3mvasc_animation_running_slide_1529929f-7a71-4ff9-83ac-94396971c68c_75164d3f-527c-41fb-8b35-348dd86be3fb.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full max-w-md animate-glow-pulse drop-shadow-2xl rounded-2xl"
               />
             </div>
           </div>

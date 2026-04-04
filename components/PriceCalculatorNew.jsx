@@ -16,34 +16,34 @@ import { useToast } from '@/hooks/use-toast'
 import Link from 'next/link'
 
 const eloTiers = [
-  { value: 'ferro4', label: 'Ferro IV', solo: 4.25, duo: 5.95 },
-  { value: 'ferro3', label: 'Ferro III', solo: 4.46, duo: 6.25 },
-  { value: 'ferro2', label: 'Ferro II', solo: 4.68, duo: 6.56 },
-  { value: 'ferro1', label: 'Ferro I', solo: 4.92, duo: 6.89 },
-  { value: 'bronze4', label: 'Bronze IV', solo: 5.10, duo: 6.80 },
-  { value: 'bronze3', label: 'Bronze III', solo: 5.36, duo: 7.14 },
-  { value: 'bronze2', label: 'Bronze II', solo: 5.63, duo: 7.50 },
-  { value: 'bronze1', label: 'Bronze I', solo: 5.91, duo: 7.87 },
-  { value: 'prata4', label: 'Prata IV', solo: 5.95, duo: 7.65 },
-  { value: 'prata3', label: 'Prata III', solo: 6.25, duo: 8.03 },
-  { value: 'prata2', label: 'Prata II', solo: 6.56, duo: 8.43 },
-  { value: 'prata1', label: 'Prata I', solo: 6.89, duo: 8.86 },
-  { value: 'ouro4', label: 'Ouro IV', solo: 11.05, duo: 15.30 },
-  { value: 'ouro3', label: 'Ouro III', solo: 11.60, duo: 16.07 },
-  { value: 'ouro2', label: 'Ouro II', solo: 12.18, duo: 16.87 },
-  { value: 'ouro1', label: 'Ouro I', solo: 12.79, duo: 17.71 },
-  { value: 'platina4', label: 'Platina IV', solo: 17.00, duo: 23.80 },
-  { value: 'platina3', label: 'Platina III', solo: 17.85, duo: 24.99 },
-  { value: 'platina2', label: 'Platina II', solo: 18.74, duo: 26.24 },
-  { value: 'platina1', label: 'Platina I', solo: 19.68, duo: 27.55 },
-  { value: 'esmeralda4', label: 'Esmeralda IV', solo: 23.80, duo: 33.15 },
-  { value: 'esmeralda3', label: 'Esmeralda III', solo: 24.99, duo: 34.81 },
-  { value: 'esmeralda2', label: 'Esmeralda II', solo: 26.24, duo: 36.54 },
-  { value: 'esmeralda1', label: 'Esmeralda I', solo: 27.55, duo: 38.37 },
-  { value: 'diamante4', label: 'Diamante IV', solo: 29.75, duo: 41.65 },
-  { value: 'diamante3', label: 'Diamante III', solo: 31.24, duo: 43.73 },
-  { value: 'diamante2', label: 'Diamante II', solo: 32.80, duo: 45.92 },
-  { value: 'diamante1', label: 'Diamante I', solo: 34.44, duo: 48.21 },
+  { value: 'ferro4', label: 'Ferro IV', solo: 5.31, duo: 7.44 },
+  { value: 'ferro3', label: 'Ferro III', solo: 5.58, duo: 7.81 },
+  { value: 'ferro2', label: 'Ferro II', solo: 5.85, duo: 8.20 },
+  { value: 'ferro1', label: 'Ferro I', solo: 6.15, duo: 8.61 },
+  { value: 'bronze4', label: 'Bronze IV', solo: 6.38, duo: 8.50 },
+  { value: 'bronze3', label: 'Bronze III', solo: 6.70, duo: 8.93 },
+  { value: 'bronze2', label: 'Bronze II', solo: 7.04, duo: 9.38 },
+  { value: 'bronze1', label: 'Bronze I', solo: 7.39, duo: 9.84 },
+  { value: 'prata4', label: 'Prata IV', solo: 7.44, duo: 9.56 },
+  { value: 'prata3', label: 'Prata III', solo: 7.81, duo: 10.04 },
+  { value: 'prata2', label: 'Prata II', solo: 8.20, duo: 10.54 },
+  { value: 'prata1', label: 'Prata I', solo: 8.61, duo: 11.08 },
+  { value: 'ouro4', label: 'Ouro IV', solo: 13.81, duo: 19.13 },
+  { value: 'ouro3', label: 'Ouro III', solo: 14.50, duo: 20.09 },
+  { value: 'ouro2', label: 'Ouro II', solo: 15.23, duo: 21.09 },
+  { value: 'ouro1', label: 'Ouro I', solo: 15.99, duo: 22.14 },
+  { value: 'platina4', label: 'Platina IV', solo: 21.25, duo: 29.75 },
+  { value: 'platina3', label: 'Platina III', solo: 22.31, duo: 31.24 },
+  { value: 'platina2', label: 'Platina II', solo: 23.43, duo: 32.80 },
+  { value: 'platina1', label: 'Platina I', solo: 24.60, duo: 34.44 },
+  { value: 'esmeralda4', label: 'Esmeralda IV', solo: 29.75, duo: 41.44 },
+  { value: 'esmeralda3', label: 'Esmeralda III', solo: 31.24, duo: 43.51 },
+  { value: 'esmeralda2', label: 'Esmeralda II', solo: 32.80, duo: 45.68 },
+  { value: 'esmeralda1', label: 'Esmeralda I', solo: 34.44, duo: 47.96 },
+  { value: 'diamante4', label: 'Diamante IV', solo: 37.19, duo: 52.06 },
+  { value: 'diamante3', label: 'Diamante III', solo: 39.05, duo: 54.66 },
+  { value: 'diamante2', label: 'Diamante II', solo: 41.00, duo: 57.40 },
+  { value: 'diamante1', label: 'Diamante I', solo: 43.05, duo: 60.26 },
 ]
 
 export default function PriceCalculatorNew() {
@@ -95,7 +95,12 @@ export default function PriceCalculatorNew() {
     const basePrice = calculateBasePrice()
     if (!selectedBooster) return basePrice
     
-    const modifier = parseFloat(selectedBooster.price_modifier || 1)
+    // Base +5% para todos + variação baseada no win rate
+    // Win rate 85% = +5% + 8.5% = 1.135
+    // Win rate 92% = +5% + 9.2% = 1.142
+    const winRate = parseFloat(selectedBooster.win_rate || 85)
+    const modifier = 1.05 + (winRate / 1000)
+    
     return basePrice * modifier
   }
 
