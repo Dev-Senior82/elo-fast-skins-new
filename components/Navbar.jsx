@@ -53,7 +53,9 @@ export default function Navbar() {
 
   const navItems = [
     { label: 'Início', href: '/' },
-    { label: 'Preços', href: '/precos' },
+    { label: 'League of Legends', href: '/precos' },
+    { label: 'Valorant', href: '/valorant' },
+    { label: 'Contas', href: '/contas' },
     { label: 'Boosters', href: '/boosters' },
     { label: 'FAQ', href: '/faq' },
     { label: 'Discord', href: 'https://discord.gg/akbFh3wJ', external: true },
