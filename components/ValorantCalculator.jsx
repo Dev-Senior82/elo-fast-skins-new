@@ -238,11 +238,11 @@ export default function ValorantCalculator() {
           </div>
 
           <div>
-            <Label>Contato (Email ou WhatsApp)</Label>
+            <Label>Contato (Discord ou WhatsApp)</Label>
             <Input
               value={clientContact}
               onChange={(e) => setClientContact(e.target.value)}
-              placeholder="seu@email.com ou (82) 99999-9999"
+              placeholder="seu@discord.com ou (82) 99999-9999"
             />
           </div>
 

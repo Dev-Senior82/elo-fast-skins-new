@@ -95,11 +95,8 @@ export default function PriceCalculatorNew() {
     const basePrice = calculateBasePrice()
     if (!selectedBooster) return basePrice
     
-    // Base +5% para todos + variação baseada no win rate
-    // Win rate 85% = +5% + 8.5% = 1.135
-    // Win rate 92% = +5% + 9.2% = 1.142
-    const winRate = parseFloat(selectedBooster.win_rate || 85)
-    const modifier = 1.05 + (winRate / 1000)
+    // Todos os boosters tem +10% fixo
+    const modifier = 1.10
     
     return basePrice * modifier
   }

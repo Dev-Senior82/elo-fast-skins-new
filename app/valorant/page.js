@@ -42,47 +42,17 @@ export default function ValorantPage() {
           <ValorantCalculator />
         </div>
 
-        {/* Lado direito com vantagens + Chamber */}
-        <div className="space-y-4 relative">
-          {/* Imagem do Chamber ao fundo */}
-          <div className="absolute -right-20 -top-20 opacity-20 hidden xl:block pointer-events-none">
-            <img 
-              src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/yjlvmezw_Chamber.png"
-              alt="Chamber"
-              className="w-96 h-auto"
-              style={{ filter: 'drop-shadow(0 0 20px rgba(255, 70, 85, 0.5))' }}
-            />
-          </div>
-
-          <Card className="glass-card border-red-500/20 relative z-10">
-            <CardContent className="p-6">
-              <Shield className="h-10 w-10 text-red-500 mb-3" />
-              <h3 className="font-bold text-lg mb-2">100% Seguro</h3>
-              <p className="text-sm text-muted-foreground">
-                Conta protegida durante todo o processo. Sem banimento.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card border-red-500/20 relative z-10">
-            <CardContent className="p-6">
-              <Zap className="h-10 w-10 text-red-500 mb-3" />
-              <h3 className="font-bold text-lg mb-2">Entrega Rápida</h3>
-              <p className="text-sm text-muted-foreground">
-                Boosters dedicados, resultados em até 7 dias.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card border-red-500/20 relative z-10">
-            <CardContent className="p-6">
-              <Target className="h-10 w-10 text-red-500 mb-3" />
-              <h3 className="font-bold text-lg mb-2">Suporte 24/7</h3>
-              <p className="text-sm text-muted-foreground">
-                Atendimento via WhatsApp a qualquer hora.
-              </p>
-            </CardContent>
-          </Card>
+        {/* Imagem do Chamber */}
+        <div className="hidden lg:flex items-center justify-center relative">
+          <img 
+            src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/yjlvmezw_Chamber.png"
+            alt="Chamber - Valorant"
+            className="w-full max-w-md h-auto"
+            style={{ 
+              filter: 'drop-shadow(0 0 40px rgba(255, 70, 85, 0.6))',
+              transform: 'scale(1.1)'
+            }}
+          />
         </div>
       </div>
 
