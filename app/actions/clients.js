@@ -187,6 +187,20 @@ export async function loginClient(email, password) {
       return { success: false, error: 'Email ou senha inválidos' }
     }
 
+    // Gerar token de sessão
+    const sessionToken = uuidv4()
+    const sessionExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 dias
+
+    // Salvar sessão no banco
+    await supabase
+      .from('client_sessions')
+      .upsert({
+        client_id: client.id,
+        session_token: sessionToken,
+        expires_at: sessionExpiry,
+        created_at: new Date().toISOString()
+      }, { onConflict: 'client_id' })
+
     return {
       success: true,
       data: {
@@ -195,11 +209,61 @@ export async function loginClient(email, password) {
         email: client.email,
         phone: client.phone,
         firstPurchaseDiscountUsed: client.first_purchase_discount_used,
+        session_token: sessionToken,
+        session_expiry: sessionExpiry
       },
     }
   } catch (error) {
     console.error('Error logging in client:', error)
     return { success: false, error: 'Erro ao fazer login' }
+  }
+}
+
+// Verificar sessão do cliente
+export async function verifyClientSession(clientId, sessionToken) {
+  try {
+    const { data, error } = await supabase
+      .from('client_sessions')
+      .select('*, clients(*)')
+      .eq('client_id', clientId)
+      .eq('session_token', sessionToken)
+      .gt('expires_at', new Date().toISOString())
+      .single()
+
+    if (error || !data) {
+      return { success: false, error: 'Sessão inválida ou expirada' }
+    }
+
+    return {
+      success: true,
+      data: {
+        id: data.clients.id,
+        name: data.clients.name,
+        email: data.clients.email,
+        phone: data.clients.phone,
+        firstPurchaseDiscountUsed: data.clients.first_purchase_discount_used,
+        session_token: sessionToken,
+        session_expiry: data.expires_at
+      }
+    }
+  } catch (error) {
+    console.error('Error verifying client session:', error)
+    return { success: false, error: 'Erro ao verificar sessão' }
+  }
+}
+
+// Logout do cliente
+export async function logoutClient(clientId) {
+  try {
+    await supabase
+      .from('client_sessions')
+      .delete()
+      .eq('client_id', clientId)
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error logging out client:', error)
+    return { success: false, error: error.message }
   }
 }
 

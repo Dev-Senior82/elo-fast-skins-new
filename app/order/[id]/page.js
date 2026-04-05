@@ -7,8 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { ArrowLeft, Send } from 'lucide-react'
-import { getOrderById } from '@/app/actions/orders'
+import { ArrowLeft, Send, Lock, Shield } from 'lucide-react'
+import { getOrderById, canAccessChat } from '@/app/actions/orders'
 import { getOrderMessages, sendMessage } from '@/app/actions/messages'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/use-toast'
@@ -23,19 +23,68 @@ export default function OrderChatPage() {
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState(null)
+  const [clientUser, setClientUser] = useState(null)
+  const [hasAccess, setHasAccess] = useState(false)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('booster_user')
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
+    // Verificar se é booster ou cliente
+    const storedBooster = localStorage.getItem('booster_user')
+    const storedClient = localStorage.getItem('client_user')
+    
+    if (storedBooster) {
+      setUser(JSON.parse(storedBooster))
+    }
+    if (storedClient) {
+      setClientUser(JSON.parse(storedClient))
     }
 
     loadOrder()
-    loadMessages()
+  }, [params.id])
 
+  useEffect(() => {
+    // Verificar acesso ao chat quando tiver os dados
+    const checkAccess = async () => {
+      if (!order) return
+      
+      // Admin sempre tem acesso
+      if (user?.is_admin) {
+        setHasAccess(true)
+        loadMessages()
+        setupRealtime()
+        return
+      }
+      
+      // Verificar se é o booster designado ou quem aceitou
+      if (user) {
+        const isDesignated = order.booster_id === user.id
+        const isAccepted = order.accepted_by_booster_id === user.id
+        
+        if (isDesignated || isAccepted) {
+          setHasAccess(true)
+          loadMessages()
+          setupRealtime()
+          return
+        }
+      }
+      
+      // Verificar se é o cliente dono do pedido
+      if (clientUser && order.client_id === clientUser.id) {
+        setHasAccess(true)
+        loadMessages()
+        setupRealtime()
+        return
+      }
+      
+      setHasAccess(false)
+    }
+
+    checkAccess()
+  }, [order, user, clientUser])
+
+  const setupRealtime = () => {
     // Subscrever a mensagens em tempo real
     const channel = supabase
-      .channel('messages')
+      .channel(`messages-${params.id}`)
       .on(
         'postgres_changes',
         {
@@ -53,7 +102,7 @@ export default function OrderChatPage() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [params.id])
+  }
 
   const loadOrder = async () => {
     const result = await getOrderById(params.id)
@@ -79,12 +128,15 @@ export default function OrderChatPage() {
 
   const handleSendMessage = async (e) => {
     e.preventDefault()
-    if (!newMessage.trim()) return
+    if (!newMessage.trim() || !hasAccess) return
+
+    const senderType = user ? 'booster' : 'client'
+    const senderName = user ? user.name : (clientUser?.name || order.client_name)
 
     const messageData = {
       orderId: params.id,
-      senderType: user ? 'booster' : 'client',
-      senderName: user ? user.name : order.client_name,
+      senderType,
+      senderName,
       message: newMessage.trim(),
     }
 
@@ -110,6 +162,43 @@ export default function OrderChatPage() {
 
   if (!order) return null
 
+  // Página de acesso negado
+  if (!hasAccess) {
+    return (
+      <div className="container py-20">
+        <Card className="glass-card border-red-500/20 max-w-md mx-auto">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-red-500/20 flex items-center justify-center">
+              <Lock className="h-8 w-8 text-red-500" />
+            </div>
+            <CardTitle className="text-2xl text-red-500">Acesso Restrito</CardTitle>
+            <CardDescription>
+              Você não tem permissão para acessar este chat.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-red-500/10 p-4 rounded-lg text-center">
+              <Shield className="h-6 w-6 text-red-500 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">
+                O chat deste pedido é privado entre o cliente e o booster designado.
+              </p>
+            </div>
+            <Button
+              asChild
+              variant="outline"
+              className="w-full"
+            >
+              <Link href={user ? (user.is_admin ? '/admin-dashboard' : '/booster-dashboard') : '/client-dashboard'}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Voltar ao Dashboard
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="container py-20">
       <Button
@@ -117,7 +206,7 @@ export default function OrderChatPage() {
         variant="ghost"
         className="mb-6"
       >
-        <Link href={user ? (user.is_admin ? '/admin-dashboard' : '/booster-dashboard') : '/'}>
+        <Link href={user ? (user.is_admin ? '/admin-dashboard' : '/booster-dashboard') : '/client-dashboard'}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Voltar
         </Link>
@@ -131,7 +220,7 @@ export default function OrderChatPage() {
               <CardTitle>Detalhes do Pedido</CardTitle>
               <CardDescription>#{order.id.slice(0, 8)}</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4" data-protected>
               <div>
                 <p className="text-sm text-muted-foreground">Cliente</p>
                 <p className="font-semibold">{order.client_name}</p>
@@ -139,8 +228,15 @@ export default function OrderChatPage() {
 
               {order.booster_name && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Booster</p>
+                  <p className="text-sm text-muted-foreground">Booster Selecionado</p>
                   <p className="font-semibold">{order.booster_name}</p>
+                </div>
+              )}
+
+              {order.accepted_by_booster_name && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Aceito por</p>
+                  <p className="font-semibold text-green-500">{order.accepted_by_booster_name}</p>
                 </div>
               )}
 
@@ -184,9 +280,12 @@ export default function OrderChatPage() {
         <div className="lg:col-span-2">
           <Card className="glass-card border-primary-500/20">
             <CardHeader>
-              <CardTitle>Chat</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                Chat Privado
+                <Shield className="h-4 w-4 text-green-500" />
+              </CardTitle>
               <CardDescription>
-                Converse sobre os detalhes do boost
+                Conversa segura entre cliente e booster
               </CardDescription>
             </CardHeader>
             <CardContent>

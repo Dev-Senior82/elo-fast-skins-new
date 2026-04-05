@@ -32,12 +32,13 @@ export async function createOrder(orderData) {
 
     if (error) throw error
 
-    // Criar notificação para o booster
+    // Criar notificação para o booster específico
     if (order.booster_id) {
       await createNotification({
         boosterId: order.booster_id,
         orderId: order.id,
-        message: `1x venda = ${order.current_rank} → ${order.desired_rank}`,
+        type: 'new_order',
+        message: `Novo pedido: ${order.current_rank} → ${order.desired_rank}`,
       })
     }
 
@@ -65,13 +66,14 @@ export async function getOrderById(orderId) {
   }
 }
 
-// Criar notificação
+// Criar notificação individual para o booster
 export async function createNotification(notificationData) {
   try {
     const notification = {
       id: uuidv4(),
       booster_id: notificationData.boosterId,
       order_id: notificationData.orderId,
+      type: notificationData.type || 'general',
       message: notificationData.message,
       read: false,
       created_at: new Date().toISOString(),
@@ -87,7 +89,7 @@ export async function createNotification(notificationData) {
   }
 }
 
-// Buscar notificações do booster
+// Buscar notificações do booster específico
 export async function getBoosterNotifications(boosterId) {
   try {
     const { data, error } = await supabase
@@ -95,6 +97,7 @@ export async function getBoosterNotifications(boosterId) {
       .select('*')
       .eq('booster_id', boosterId)
       .order('created_at', { ascending: false })
+      .limit(50)
 
     if (error) throw error
     return { success: true, data: data || [] }
@@ -116,6 +119,39 @@ export async function markNotificationAsRead(notificationId) {
     return { success: true }
   } catch (error) {
     console.error('Error marking notification as read:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Deletar notificação
+export async function deleteNotification(notificationId, boosterId) {
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .delete()
+      .eq('id', notificationId)
+      .eq('booster_id', boosterId)
+
+    if (error) throw error
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting notification:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Deletar todas as notificações do booster
+export async function clearAllNotifications(boosterId) {
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .delete()
+      .eq('booster_id', boosterId)
+
+    if (error) throw error
+    return { success: true }
+  } catch (error) {
+    console.error('Error clearing notifications:', error)
     return { success: false, error: error.message }
   }
 }
@@ -149,5 +185,41 @@ export async function confirmPayment(orderId) {
   } catch (error) {
     console.error('Error confirming payment:', error)
     return { success: false, error: error.message }
+  }
+}
+
+// Verificar acesso ao chat (apenas cliente e booster do pedido)
+export async function canAccessChat(orderId, userId, userType) {
+  try {
+    const { data: order, error } = await supabase
+      .from('orders')
+      .select('client_id, booster_id, accepted_by_booster_id')
+      .eq('id', orderId)
+      .single()
+
+    if (error || !order) {
+      return { success: false, canAccess: false }
+    }
+
+    // Admin sempre pode acessar
+    if (userType === 'admin') {
+      return { success: true, canAccess: true }
+    }
+
+    // Cliente pode acessar seu próprio pedido
+    if (userType === 'client' && order.client_id === userId) {
+      return { success: true, canAccess: true }
+    }
+
+    // Booster pode acessar se for o designado ou quem aceitou
+    if (userType === 'booster') {
+      const canAccess = order.booster_id === userId || order.accepted_by_booster_id === userId
+      return { success: true, canAccess }
+    }
+
+    return { success: true, canAccess: false }
+  } catch (error) {
+    console.error('Error checking chat access:', error)
+    return { success: false, canAccess: false }
   }
 }
