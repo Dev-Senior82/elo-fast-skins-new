@@ -1,56 +1,68 @@
 'use server'
 
 import { supabase } from '@/lib/supabase'
-import { v4 as uuidv4 } from 'uuid'
+import { createSession, requireAdmin, getSession, destroySession } from '@/lib/session'
+import bcrypt from 'bcryptjs'
 
-// Buscar todos os boosters ativos
 export async function getActiveBoosters() {
   try {
     const { data, error } = await supabase
       .from('boosters')
-      .select('*')
+      .select('id, name, rank, rating, wins, specialty, avatar_url')
       .eq('active', true)
       .eq('is_admin', false)
       .order('rating', { ascending: false })
-
     if (error) throw error
     return { success: true, data: data || [] }
   } catch (error) {
     console.error('Error fetching boosters:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Erro ao buscar boosters' }
   }
 }
 
-// Login do booster
 export async function loginBooster(login, password) {
   try {
-    // Buscar booster pelo login
+    if (!login || !password) {
+      return { success: false, error: 'Login e senha sao obrigatorios' }
+    }
+
     const { data, error } = await supabase
       .from('boosters')
       .select('*')
-      .eq('login', login)
+      .eq('login', login.trim())
       .eq('active', true)
       .single()
 
     if (error || !data) {
-      return { success: false, error: 'Login ou senha inválidos' }
+      return { success: false, error: 'Login ou senha invalidos' }
     }
 
-    // Verificar senha (suporta plain text e hash para retrocompatibilidade)
-    const bcrypt = require('bcryptjs')
     let passwordMatch = false
-    
-    // Se a senha no banco começa com $2, é um hash bcrypt
+
     if (data.password.startsWith('$2')) {
       passwordMatch = await bcrypt.compare(password, data.password)
     } else {
-      // Retrocompatibilidade: aceita senha em plain text
+      console.warn(`[SEGURANCA] Booster ${data.id} ainda usa senha plain text`)
       passwordMatch = data.password === password
+
+      if (passwordMatch) {
+        const hashed = await bcrypt.hash(password, 12)
+        await supabase
+          .from('boosters')
+          .update({ password: hashed })
+          .eq('id', data.id)
+      }
     }
 
     if (!passwordMatch) {
-      return { success: false, error: 'Login ou senha inválidos' }
+      return { success: false, error: 'Login ou senha invalidos' }
     }
+
+    await createSession({
+      id: data.id,
+      name: data.name,
+      is_admin: data.is_admin || false,
+    })
 
     return {
       success: true,
@@ -67,26 +79,45 @@ export async function loginBooster(login, password) {
   }
 }
 
-// Buscar pedidos do booster
-export async function getBoosterOrders(boosterId) {
+export async function getCurrentSession() {
   try {
+    const session = await getSession()
+    if (!session) return { success: false }
+    return { success: true, data: session }
+  } catch {
+    return { success: false }
+  }
+}
+
+export async function getBoosterOrders() {
+  try {
+    const session = await getSession()
+    if (!session) {
+      return { success: false, error: 'Nao autorizado' }
+    }
+
     const { data, error } = await supabase
       .from('orders')
       .select('*')
-      .eq('booster_id', boosterId)
+      .eq('booster_id', session.id)
       .order('created_at', { ascending: false })
 
     if (error) throw error
     return { success: true, data: data || [] }
   } catch (error) {
     console.error('Error fetching orders:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Erro ao buscar pedidos' }
   }
 }
 
-// Buscar TODOS os pedidos (admin)
 export async function getAllOrders() {
   try {
+    const { authorized, reason } = await requireAdmin()
+    if (!authorized) {
+      console.warn(`[SEGURANCA] Tentativa nao autorizada de getAllOrders: ${reason}`)
+      return { success: false, error: 'Acesso negado' }
+    }
+
     const { data, error } = await supabase
       .from('orders')
       .select('*')
@@ -96,13 +127,15 @@ export async function getAllOrders() {
     return { success: true, data: data || [] }
   } catch (error) {
     console.error('Error fetching all orders:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Erro ao buscar pedidos' }
   }
 }
 
-// Aceitar pedido
 export async function acceptOrder(orderId) {
   try {
+    const { authorized } = await requireAdmin()
+    if (!authorized) return { success: false, error: 'Acesso negado' }
+
     const { error } = await supabase
       .from('orders')
       .update({ status: 'accepted', accepted_at: new Date().toISOString() })
@@ -112,13 +145,15 @@ export async function acceptOrder(orderId) {
     return { success: true }
   } catch (error) {
     console.error('Error accepting order:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Erro ao aceitar pedido' }
   }
 }
 
-// Completar pedido
 export async function completeOrder(orderId) {
   try {
+    const { authorized } = await requireAdmin()
+    if (!authorized) return { success: false, error: 'Acesso negado' }
+
     const { error } = await supabase
       .from('orders')
       .update({ status: 'completed', completed_at: new Date().toISOString() })
@@ -128,6 +163,11 @@ export async function completeOrder(orderId) {
     return { success: true }
   } catch (error) {
     console.error('Error completing order:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Erro ao completar pedido' }
   }
+}
+
+export async function logoutBooster() {
+  await destroySession()
+  return { success: true }
 }

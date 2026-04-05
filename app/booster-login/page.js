@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,7 @@ export default function BoosterLoginPage() {
   const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
+  const searchParams = useSearchParams()
   const { toast } = useToast()
 
   const handleSubmit = async (e) => {
@@ -25,29 +25,28 @@ export default function BoosterLoginPage() {
     const result = await loginBooster(login, password)
 
     if (result.success) {
-      // Salvar dados do usuário no localStorage
-      localStorage.setItem('booster_user', JSON.stringify(result.data))
-      
       toast({
         title: 'Login realizado!',
         description: `Bem-vindo, ${result.data.name}!`,
       })
 
-      // Redirecionar para o dashboard apropriado
-      if (result.data.is_admin) {
-        router.push('/admin-dashboard')
-      } else {
-        router.push('/booster-dashboard')
-      }
+      const redirect = searchParams.get('redirect')
+      const destination = redirect
+        ? redirect
+        : result.data.is_admin
+          ? '/admin-dashboard'
+          : '/booster-dashboard'
+
+      // Força reload completo para o browser reconhecer o cookie
+      window.location.href = destination
     } else {
       toast({
         title: 'Erro ao fazer login',
         description: result.error,
         variant: 'destructive',
       })
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   return (
@@ -74,6 +73,7 @@ export default function BoosterLoginPage() {
                   value={login}
                   onChange={(e) => setLogin(e.target.value)}
                   required
+                  autoComplete="off"
                   className="bg-white/50 dark:bg-black/50"
                 />
               </div>
@@ -87,6 +87,7 @@ export default function BoosterLoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  autoComplete="current-password"
                   className="bg-white/50 dark:bg-black/50"
                 />
               </div>
@@ -111,7 +112,7 @@ export default function BoosterLoginPage() {
 
               <div className="text-center text-sm text-muted-foreground">
                 <Link href="/" className="hover:text-primary-500">
-                  Voltar para o início
+                  Voltar para o inicio
                 </Link>
               </div>
             </form>

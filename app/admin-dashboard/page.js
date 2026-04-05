@@ -1,13 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CheckCircle2, Clock, Trophy, MessageSquare, LogOut, Shield } from 'lucide-react'
-import { getAllOrders, acceptOrder, completeOrder } from '@/app/actions/boosters'
+import { getAllOrders, acceptOrder, completeOrder, getCurrentSession, logoutBooster } from '@/app/actions/boosters'
 import { useToast } from '@/hooks/use-toast'
 import Link from 'next/link'
 
@@ -15,32 +14,26 @@ export default function AdminDashboardPage() {
   const [user, setUser] = useState(null)
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
-  const router = useRouter()
   const { toast } = useToast()
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('booster_user')
-    if (!storedUser) {
-      router.push('/booster-login')
-      return
-    }
-
-    const userData = JSON.parse(storedUser)
-    if (!userData.is_admin) {
-      toast({
-        title: 'Acesso negado',
-        description: 'Você não tem permissão para acessar esta página.',
-        variant: 'destructive',
-      })
-      router.push('/booster-dashboard')
-      return
-    }
-
-    setUser(userData)
-    loadOrders()
+    loadData()
   }, [])
 
-  const loadOrders = async () => {
+  const loadData = async () => {
+    const sessionResult = await getCurrentSession()
+    if (!sessionResult.success) {
+      window.location.href = '/booster-login'
+      return
+    }
+
+    if (!sessionResult.data.isAdmin) {
+      window.location.href = '/booster-dashboard'
+      return
+    }
+
+    setUser(sessionResult.data)
+
     const result = await getAllOrders()
     if (result.success) {
       setOrders(result.data)
@@ -51,40 +44,26 @@ export default function AdminDashboardPage() {
   const handleAcceptOrder = async (orderId) => {
     const result = await acceptOrder(orderId)
     if (result.success) {
-      toast({
-        title: 'Pedido aceito!',
-        description: 'O pedido foi aceito com sucesso.',
-      })
-      loadOrders()
+      toast({ title: 'Pedido aceito!' })
+      loadData()
     } else {
-      toast({
-        title: 'Erro',
-        description: result.error,
-        variant: 'destructive',
-      })
+      toast({ title: 'Erro', description: result.error, variant: 'destructive' })
     }
   }
 
   const handleCompleteOrder = async (orderId) => {
     const result = await completeOrder(orderId)
     if (result.success) {
-      toast({
-        title: 'Pedido concluído!',
-        description: 'O pedido foi marcado como concluído.',
-      })
-      loadOrders()
+      toast({ title: 'Pedido concluido!' })
+      loadData()
     } else {
-      toast({
-        title: 'Erro',
-        description: result.error,
-        variant: 'destructive',
-      })
+      toast({ title: 'Erro', description: result.error, variant: 'destructive' })
     }
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('booster_user')
-    router.push('/')
+  const handleLogout = async () => {
+    await logoutBooster()
+    window.location.href = '/'
   }
 
   if (loading) {
@@ -114,7 +93,7 @@ export default function AdminDashboardPage() {
           <Badge variant={order.status === 'completed' ? 'default' : 'secondary'}>
             {order.status === 'pending' && 'Pendente'}
             {order.status === 'accepted' && 'Aceito'}
-            {order.status === 'completed' && 'Concluído'}
+            {order.status === 'completed' && 'Concluido'}
           </Badge>
         </div>
         <CardDescription>
@@ -131,28 +110,18 @@ export default function AdminDashboardPage() {
         {showActions && (
           <div className="flex gap-2">
             {order.status === 'pending' && (
-              <Button
-                onClick={() => handleAcceptOrder(order.id)}
-                className="flex-1 bg-green-500 hover:bg-green-600"
-              >
+              <Button onClick={() => handleAcceptOrder(order.id)} className="flex-1 bg-green-500 hover:bg-green-600">
                 <CheckCircle2 className="h-4 w-4 mr-2" />
                 Aceitar
               </Button>
             )}
             {order.status === 'accepted' && (
-              <Button
-                onClick={() => handleCompleteOrder(order.id)}
-                className="flex-1 bg-blue-500 hover:bg-blue-600"
-              >
+              <Button onClick={() => handleCompleteOrder(order.id)} className="flex-1 bg-blue-500 hover:bg-blue-600">
                 <Trophy className="h-4 w-4 mr-2" />
                 Concluir
               </Button>
             )}
-            <Button
-              asChild
-              variant="outline"
-              className="flex-1"
-            >
+            <Button asChild variant="outline" className="flex-1">
               <Link href={`/order/${order.id}`}>
                 <MessageSquare className="h-4 w-4 mr-2" />
                 Chat
@@ -172,71 +141,30 @@ export default function AdminDashboardPage() {
             <Shield className="h-8 w-8 text-orange-500" />
             Painel <span className="gamer-gradient bg-clip-text text-transparent">Administrativo</span>
           </h1>
-          <p className="text-muted-foreground">Olá, {user.name}! Você tem acesso total ao sistema.</p>
+          <p className="text-muted-foreground">Ola, {user.name}! Voce tem acesso total ao sistema.</p>
         </div>
-        <div className="flex gap-3">
-          <Button asChild variant="outline" className="border-cyan-500/50 hover:bg-cyan-500/10">
-            <Link href="/admin-contas">
-              Gerenciar Contas
-            </Link>
-          </Button>
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            className="border-red-500/50 hover:bg-red-500/10"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Sair
-          </Button>
-        </div>
+        <Button onClick={handleLogout} variant="outline" className="border-red-500/50 hover:bg-red-500/10">
+          <LogOut className="h-4 w-4 mr-2" />
+          Sair
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card className="glass-card border-purple-500/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm">
-              Total de Pedidos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-purple-500">{orders.length}</p>
-          </CardContent>
+          <CardHeader><CardTitle className="text-sm">Total de Pedidos</CardTitle></CardHeader>
+          <CardContent><p className="text-3xl font-bold text-purple-500">{orders.length}</p></CardContent>
         </Card>
-
         <Card className="glass-card border-orange-500/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Clock className="h-4 w-4 text-orange-500" />
-              Pendentes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-orange-500">{pendingOrders.length}</p>
-          </CardContent>
+          <CardHeader><CardTitle className="flex items-center gap-2 text-sm"><Clock className="h-4 w-4 text-orange-500" />Pendentes</CardTitle></CardHeader>
+          <CardContent><p className="text-3xl font-bold text-orange-500">{pendingOrders.length}</p></CardContent>
         </Card>
-
         <Card className="glass-card border-blue-500/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <CheckCircle2 className="h-4 w-4 text-blue-500" />
-              Aceitos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-blue-500">{acceptedOrders.length}</p>
-          </CardContent>
+          <CardHeader><CardTitle className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-blue-500" />Aceitos</CardTitle></CardHeader>
+          <CardContent><p className="text-3xl font-bold text-blue-500">{acceptedOrders.length}</p></CardContent>
         </Card>
-
         <Card className="glass-card border-green-500/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Trophy className="h-4 w-4 text-green-500" />
-              Concluídos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-green-500">{completedOrders.length}</p>
-          </CardContent>
+          <CardHeader><CardTitle className="flex items-center gap-2 text-sm"><Trophy className="h-4 w-4 text-green-500" />Concluidos</CardTitle></CardHeader>
+          <CardContent><p className="text-3xl font-bold text-green-500">{completedOrders.length}</p></CardContent>
         </Card>
       </div>
 
@@ -245,52 +173,33 @@ export default function AdminDashboardPage() {
           <TabsTrigger value="all">Todos ({orders.length})</TabsTrigger>
           <TabsTrigger value="pending">Pendentes ({pendingOrders.length})</TabsTrigger>
           <TabsTrigger value="accepted">Aceitos ({acceptedOrders.length})</TabsTrigger>
-          <TabsTrigger value="completed">Concluídos ({completedOrders.length})</TabsTrigger>
+          <TabsTrigger value="completed">Concluidos ({completedOrders.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-4 mt-6">
           {orders.length === 0 ? (
-            <Card className="glass-card">
-              <CardContent className="py-8 text-center text-muted-foreground">
-                Nenhum pedido cadastrado
-              </CardContent>
-            </Card>
+            <Card className="glass-card"><CardContent className="py-8 text-center text-muted-foreground">Nenhum pedido cadastrado</CardContent></Card>
           ) : (
             orders.map(order => <OrderCard key={order.id} order={order} showActions />)
           )}
         </TabsContent>
-
         <TabsContent value="pending" className="space-y-4 mt-6">
           {pendingOrders.length === 0 ? (
-            <Card className="glass-card">
-              <CardContent className="py-8 text-center text-muted-foreground">
-                Nenhum pedido pendente
-              </CardContent>
-            </Card>
+            <Card className="glass-card"><CardContent className="py-8 text-center text-muted-foreground">Nenhum pedido pendente</CardContent></Card>
           ) : (
             pendingOrders.map(order => <OrderCard key={order.id} order={order} showActions />)
           )}
         </TabsContent>
-
         <TabsContent value="accepted" className="space-y-4 mt-6">
           {acceptedOrders.length === 0 ? (
-            <Card className="glass-card">
-              <CardContent className="py-8 text-center text-muted-foreground">
-                Nenhum pedido aceito
-              </CardContent>
-            </Card>
+            <Card className="glass-card"><CardContent className="py-8 text-center text-muted-foreground">Nenhum pedido aceito</CardContent></Card>
           ) : (
             acceptedOrders.map(order => <OrderCard key={order.id} order={order} showActions />)
           )}
         </TabsContent>
-
         <TabsContent value="completed" className="space-y-4 mt-6">
           {completedOrders.length === 0 ? (
-            <Card className="glass-card">
-              <CardContent className="py-8 text-center text-muted-foreground">
-                Nenhum pedido concluído
-              </CardContent>
-            </Card>
+            <Card className="glass-card"><CardContent className="py-8 text-center text-muted-foreground">Nenhum pedido concluido</CardContent></Card>
           ) : (
             completedOrders.map(order => <OrderCard key={order.id} order={order} showActions={false} />)
           )}
