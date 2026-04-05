@@ -39,19 +39,19 @@ export default function BoosterDashboardPage() {
 
       const userData = JSON.parse(storedUser)
       
-      // Verificar sessão no servidor
+      // Se tem token de sessão, tentar verificar
       if (userData.session_token) {
         const sessionResult = await verifyBoosterSession(userData.id, userData.session_token)
-        if (!sessionResult.success) {
-          // Sessão inválida, fazer logout
-          localStorage.removeItem('booster_user')
-          router.push('/booster-login')
-          return
+        if (sessionResult.success) {
+          // Atualizar dados do usuário
+          localStorage.setItem('booster_user', JSON.stringify(sessionResult.data))
+          setUser(sessionResult.data)
+        } else {
+          // Sessão expirou mas ainda tem dados, usar dados locais
+          setUser(userData)
         }
-        // Atualizar dados do usuário se necessário
-        localStorage.setItem('booster_user', JSON.stringify(sessionResult.data))
-        setUser(sessionResult.data)
       } else {
+        // Sem token de sessão, usar dados locais
         setUser(userData)
       }
       

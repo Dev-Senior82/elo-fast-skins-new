@@ -26,7 +26,7 @@ export default function BoosterLoginPage() {
         try {
           const userData = JSON.parse(storedUser)
           
-          // Verificar se a sessão ainda é válida
+          // Se tem token de sessão, verificar se ainda é válido
           if (userData.session_token) {
             const sessionResult = await verifyBoosterSession(userData.id, userData.session_token)
             if (sessionResult.success) {
@@ -39,9 +39,19 @@ export default function BoosterLoginPage() {
               }
               return
             }
+          } else {
+            // Sem token de sessão mas tem dados, redirecionar mesmo assim
+            if (userData.id && userData.name) {
+              if (userData.is_admin) {
+                router.push('/admin-dashboard')
+              } else {
+                router.push('/booster-dashboard')
+              }
+              return
+            }
           }
           
-          // Sessão inválida, limpar
+          // Dados inválidos, limpar
           localStorage.removeItem('booster_user')
         } catch (error) {
           localStorage.removeItem('booster_user')

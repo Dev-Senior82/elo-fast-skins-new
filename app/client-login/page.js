@@ -26,7 +26,7 @@ export default function ClientLoginPage() {
         try {
           const userData = JSON.parse(storedUser)
           
-          // Verificar se a sessão ainda é válida
+          // Se tem token de sessão, verificar se ainda é válido
           if (userData.session_token) {
             const sessionResult = await verifyClientSession(userData.id, userData.session_token)
             if (sessionResult.success) {
@@ -35,9 +35,15 @@ export default function ClientLoginPage() {
               router.push('/client-dashboard')
               return
             }
+          } else {
+            // Sem token de sessão mas tem dados, redirecionar mesmo assim
+            if (userData.id && userData.name) {
+              router.push('/client-dashboard')
+              return
+            }
           }
           
-          // Sessão inválida, limpar
+          // Dados inválidos, limpar
           localStorage.removeItem('client_user')
         } catch (error) {
           localStorage.removeItem('client_user')

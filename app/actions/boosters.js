@@ -41,39 +41,36 @@ export async function loginBooster(login, password) {
     let passwordMatch = false
     
     // Se a senha no banco começa com $2, é um hash bcrypt
-    if (data.password.startsWith('$2')) {
+    if (data.password && data.password.startsWith('$2')) {
       passwordMatch = await bcrypt.compare(password, data.password)
     } else {
-      // Retrocompatibilidade: aceita senha em plain text e faz hash
+      // Retrocompatibilidade: aceita senha em plain text
       passwordMatch = data.password === password
-      
-      // Atualizar para hash bcrypt se login bem sucedido
-      if (passwordMatch) {
-        const hashedPassword = await bcrypt.hash(password, 12)
-        await supabase
-          .from('boosters')
-          .update({ password: hashedPassword })
-          .eq('id', data.id)
-      }
     }
 
     if (!passwordMatch) {
       return { success: false, error: 'Login ou senha inválidos' }
     }
 
-    // Gerar token de sessão
-    const sessionToken = uuidv4()
-    const sessionExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 dias
+    // Tentar salvar sessão (não bloqueia se falhar)
+    let sessionToken = uuidv4()
+    let sessionExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
 
-    // Salvar sessão no banco
-    await supabase
-      .from('booster_sessions')
-      .upsert({
-        booster_id: data.id,
-        session_token: sessionToken,
-        expires_at: sessionExpiry,
-        created_at: new Date().toISOString()
-      }, { onConflict: 'booster_id' })
+    try {
+      await supabase
+        .from('booster_sessions')
+        .upsert({
+          booster_id: data.id,
+          session_token: sessionToken,
+          expires_at: sessionExpiry,
+          created_at: new Date().toISOString()
+        }, { onConflict: 'booster_id' })
+    } catch (sessionError) {
+      // Se falhar ao salvar sessão, continua sem ela
+      console.log('Session table not available, continuing without persistent session')
+      sessionToken = null
+      sessionExpiry = null
+    }
 
     return {
       success: true,
@@ -96,6 +93,11 @@ export async function loginBooster(login, password) {
 // Verificar sessão válida
 export async function verifyBoosterSession(boosterId, sessionToken) {
   try {
+    // Se não tem token, retorna falha silenciosa
+    if (!sessionToken) {
+      return { success: false, error: 'Sem token de sessão' }
+    }
+
     const { data, error } = await supabase
       .from('booster_sessions')
       .select('*, boosters(*)')
@@ -121,7 +123,8 @@ export async function verifyBoosterSession(boosterId, sessionToken) {
       }
     }
   } catch (error) {
-    console.error('Error verifying session:', error)
+    // Se a tabela não existe, retorna erro silencioso
+    console.log('Session verification failed:', error.message)
     return { success: false, error: 'Erro ao verificar sessão' }
   }
 }

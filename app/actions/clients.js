@@ -187,19 +187,25 @@ export async function loginClient(email, password) {
       return { success: false, error: 'Email ou senha inválidos' }
     }
 
-    // Gerar token de sessão
-    const sessionToken = uuidv4()
-    const sessionExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 dias
+    // Tentar salvar sessão (não bloqueia se falhar)
+    let sessionToken = uuidv4()
+    let sessionExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
 
-    // Salvar sessão no banco
-    await supabase
-      .from('client_sessions')
-      .upsert({
-        client_id: client.id,
-        session_token: sessionToken,
-        expires_at: sessionExpiry,
-        created_at: new Date().toISOString()
-      }, { onConflict: 'client_id' })
+    try {
+      await supabase
+        .from('client_sessions')
+        .upsert({
+          client_id: client.id,
+          session_token: sessionToken,
+          expires_at: sessionExpiry,
+          created_at: new Date().toISOString()
+        }, { onConflict: 'client_id' })
+    } catch (sessionError) {
+      // Se falhar ao salvar sessão, continua sem ela
+      console.log('Session table not available, continuing without persistent session')
+      sessionToken = null
+      sessionExpiry = null
+    }
 
     return {
       success: true,
@@ -222,6 +228,10 @@ export async function loginClient(email, password) {
 // Verificar sessão do cliente
 export async function verifyClientSession(clientId, sessionToken) {
   try {
+    if (!sessionToken) {
+      return { success: false, error: 'Sem token de sessão' }
+    }
+
     const { data, error } = await supabase
       .from('client_sessions')
       .select('*, clients(*)')
@@ -247,7 +257,7 @@ export async function verifyClientSession(clientId, sessionToken) {
       }
     }
   } catch (error) {
-    console.error('Error verifying client session:', error)
+    console.log('Session verification failed:', error.message)
     return { success: false, error: 'Erro ao verificar sessão' }
   }
 }

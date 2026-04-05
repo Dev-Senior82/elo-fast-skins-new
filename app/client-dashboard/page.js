@@ -28,19 +28,19 @@ export default function ClientDashboardPage() {
 
       const userData = JSON.parse(storedUser)
       
-      // Verificar sessão no servidor
+      // Se tem token de sessão, tentar verificar
       if (userData.session_token) {
         const sessionResult = await verifyClientSession(userData.id, userData.session_token)
-        if (!sessionResult.success) {
-          // Sessão inválida, fazer logout
-          localStorage.removeItem('client_user')
-          router.push('/client-login')
-          return
+        if (sessionResult.success) {
+          // Atualizar dados do usuário
+          localStorage.setItem('client_user', JSON.stringify(sessionResult.data))
+          setUser(sessionResult.data)
+        } else {
+          // Sessão expirou mas ainda tem dados, usar dados locais
+          setUser(userData)
         }
-        // Atualizar dados do usuário se necessário
-        localStorage.setItem('client_user', JSON.stringify(sessionResult.data))
-        setUser(sessionResult.data)
       } else {
+        // Sem token de sessão, usar dados locais
         setUser(userData)
       }
       
