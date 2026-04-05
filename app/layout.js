@@ -5,7 +5,6 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import WhatsAppButton from '@/components/WhatsAppButton'
 import { Toaster } from '@/components/ui/toaster'
-import SecurityProvider from '@/components/SecurityProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -25,15 +24,13 @@ export default function RootLayout({ children }) {
           enableSystem
           disableTransitionOnChange
         >
-          <SecurityProvider>
-            <div className="min-h-screen flex flex-col">
-              <Navbar />
-              <main className="flex-1">{children}</main>
-              <Footer />
-              <WhatsAppButton />
-              <Toaster />
-            </div>
-          </SecurityProvider>
+          <div className="min-h-screen flex flex-col">
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <WhatsAppButton />
+            <Toaster />
+          </div>
         </ThemeProvider>
       </body>
     </html>

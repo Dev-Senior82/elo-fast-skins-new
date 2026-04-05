@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ShoppingBag, MessageSquare, User, LogOut, Gift } from 'lucide-react'
-import { getClientOrders, verifyClientSession, logoutClient } from '@/app/actions/clients'
+import { getClientOrders } from '@/app/actions/clients'
 import { useToast } from '@/hooks/use-toast'
 import Link from 'next/link'
 
@@ -19,36 +19,16 @@ export default function ClientDashboardPage() {
   const { toast } = useToast()
 
   useEffect(() => {
-    const checkSession = async () => {
-      const storedUser = localStorage.getItem('client_user')
-      if (!storedUser) {
-        router.push('/client-login')
-        return
-      }
-
-      const userData = JSON.parse(storedUser)
-      
-      // Se tem token de sessão, tentar verificar
-      if (userData.session_token) {
-        const sessionResult = await verifyClientSession(userData.id, userData.session_token)
-        if (sessionResult.success) {
-          // Atualizar dados do usuário
-          localStorage.setItem('client_user', JSON.stringify(sessionResult.data))
-          setUser(sessionResult.data)
-        } else {
-          // Sessão expirou mas ainda tem dados, usar dados locais
-          setUser(userData)
-        }
-      } else {
-        // Sem token de sessão, usar dados locais
-        setUser(userData)
-      }
-      
-      loadOrders(userData.id)
+    const storedUser = localStorage.getItem('client_user')
+    if (!storedUser) {
+      router.push('/client-login')
+      return
     }
 
-    checkSession()
-  }, [router])
+    const userData = JSON.parse(storedUser)
+    setUser(userData)
+    loadOrders(userData.id)
+  }, [])
 
   const loadOrders = async (clientId) => {
     const result = await getClientOrders(clientId)
@@ -58,10 +38,7 @@ export default function ClientDashboardPage() {
     setLoading(false)
   }
 
-  const handleLogout = async () => {
-    if (user?.id) {
-      await logoutClient(user.id)
-    }
+  const handleLogout = () => {
     localStorage.removeItem('client_user')
     router.push('/')
   }
