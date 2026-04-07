@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -14,7 +15,6 @@ import { validateDiscountCode, incrementDiscountCodeUsage, markFirstPurchaseDisc
 import { useToast } from '@/hooks/use-toast'
 import { EXTRA_SERVICES } from '@/lib/constants'
 import Link from 'next/link'
-import EloVisualSelector from './EloVisualSelector'
 import BoosterInfoPanel from './BoosterInfoPanel'
 import ExtraServicesCard from './ExtraServicesCard'
 
@@ -302,21 +302,39 @@ export default function PriceCalculatorNew() {
               </Card>
             )}
 
-            {/* Elo Atual - VISUAL */}
-            <EloVisualSelector
-              label="Elo Atual"
-              selectedElo={currentElo}
-              onEloChange={setCurrentElo}
-              eloTiers={eloTiers}
-            />
+            {/* Elo Atual - SELECT SIMPLES */}
+            <div className="space-y-2">
+              <Label>Elo Atual</Label>
+              <Select value={currentElo} onValueChange={setCurrentElo}>
+                <SelectTrigger className="bg-white/50 dark:bg-black/50">
+                  <SelectValue placeholder="Selecione seu elo atual" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {eloTiers.map((elo) => (
+                    <SelectItem key={elo.value} value={elo.value}>
+                      {elo.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-            {/* Elo Desejado - VISUAL */}
-            <EloVisualSelector
-              label="Elo Desejado"
-              selectedElo={desiredElo}
-              onEloChange={setDesiredElo}
-              eloTiers={eloTiers}
-            />
+            {/* Elo Desejado - SELECT SIMPLES */}
+            <div className="space-y-2">
+              <Label>Elo Desejado</Label>
+              <Select value={desiredElo} onValueChange={setDesiredElo}>
+                <SelectTrigger className="bg-white/50 dark:bg-black/50">
+                  <SelectValue placeholder="Selecione seu elo desejado" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {eloTiers.map((elo) => (
+                    <SelectItem key={elo.value} value={elo.value}>
+                      {elo.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             {/* Seletor de Vitórias (para Mestre+) */}
             {desiredElo && isWinBasedElo(desiredElo) && (
