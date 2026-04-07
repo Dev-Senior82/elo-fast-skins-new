@@ -194,6 +194,30 @@ a, button, [role="button"], input[type="submit"], input[type="button"] {
 }
 
 /* Glow effect para imagens de elo */
+
+/* Gaming Premium Theme - Glow Effects */
+.drop-shadow-glow {
+  filter: drop-shadow(0 0 8px rgba(124, 58, 237, 0.3));
+}
+
+.drop-shadow-glow-strong {
+  filter: drop-shadow(0 0 20px rgba(124, 58, 237, 0.6));
+}
+
+/* Scale animation for selected items */
+@keyframes scale-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.animate-scale-pulse {
+  animation: scale-pulse 2s ease-in-out infinite;
+}
+
 .drop-shadow-glow {
   filter: drop-shadow(0 0 20px rgba(255, 94, 77, 0.4));
 }
