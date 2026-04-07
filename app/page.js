@@ -6,6 +6,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import TestimonialCarousel from '@/components/TestimonialCarousel'
 import TestimonialForm from '@/components/TestimonialForm'
 import { getApprovedTestimonials } from './actions/testimonials'
+import AnnouncementBanner from '@/components/AnnouncementBanner'
+import FakeActivityBanner from '@/components/FakeActivityBanner'
+import EloBoostPage from '@/components/EloBoostPage'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,6 +18,10 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col">
+      {/* Banners no Topo */}
+      <AnnouncementBanner />
+      <FakeActivityBanner />
+      
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 gamer-gradient opacity-10" />
@@ -97,6 +104,19 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Calculadora de Boost - NOVA POSIÇÃO */}
+      <section className="container py-12" id="calculadora">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Calcule seu <span className="gamer-gradient bg-clip-text text-transparent">Boost</span>
+          </h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Use nossa calculadora premium e veja quanto custa alcançar o elo dos seus sonhos!
+          </p>
+        </div>
+        <EloBoostPage showHeader={false} />
       </section>
 
       {/* Serviços */}

@@ -11,7 +11,7 @@ import RankSelector from './RankSelector'
 import BoostOptions from './BoostOptions'
 import OrderSummary from './OrderSummary'
 
-export default function EloBoostPage() {
+export default function EloBoostPage({ showHeader = true }) {
   const [currentRank, setCurrentRank] = useState(null)
   const [currentDivision, setCurrentDivision] = useState(null)
   const [desiredRank, setDesiredRank] = useState(null)
@@ -202,21 +202,23 @@ export default function EloBoostPage() {
   const totalPrice = calculateTotalPrice()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950">
-      {/* Hero Header */}
-      <div className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 border-b border-purple-500/30">
-        <div className="container mx-auto px-6 py-12">
-          <div className="flex items-center gap-4 mb-4">
-            <Sparkles className="w-10 h-10 text-purple-400" />
-            <h1 className="text-5xl font-black text-white tracking-tight">
-              ELO BOOST LOL
-            </h1>
+    <div className={showHeader ? "min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950" : ""}>
+      {/* Hero Header - Condicional */}
+      {showHeader && (
+        <div className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 border-b border-purple-500/30">
+          <div className="container mx-auto px-6 py-12">
+            <div className="flex items-center gap-4 mb-4">
+              <Sparkles className="w-10 h-10 text-purple-400" />
+              <h1 className="text-5xl font-black text-white tracking-tight">
+                ELO BOOST LOL
+              </h1>
+            </div>
+            <p className="text-xl text-slate-300 max-w-2xl">
+              Serviço profissional de boost • Entrega rápida • 100% Seguro
+            </p>
           </div>
-          <p className="text-xl text-slate-300 max-w-2xl">
-            Serviço profissional de boost • Entrega rápida • 100% Seguro
-          </p>
         </div>
-      </div>
+      )}
 
       {/* Main Content */}
       <div className="container mx-auto px-6 py-12">

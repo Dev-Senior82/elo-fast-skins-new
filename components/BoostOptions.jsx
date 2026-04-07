@@ -32,7 +32,17 @@ export default function BoostOptions({ selectedOptions, onToggleOption }) {
               )}
 
               {/* Icon */}
-              <div className="text-4xl mb-2">{option.icon}</div>
+              <div className="text-4xl mb-2">
+                {option.icon?.startsWith('/') ? (
+                  <img 
+                    src={option.icon} 
+                    alt={option.label}
+                    className="w-12 h-12 mx-auto object-contain"
+                  />
+                ) : (
+                  <span>{option.icon}</span>
+                )}
+              </div>
 
               {/* Label */}
               <h4 className="text-white font-bold mb-1">{option.label}</h4>
