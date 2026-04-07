@@ -19,6 +19,7 @@ export default function EloBoostPage({ showHeader = true }) {
   const [serviceType, setServiceType] = useState('solo')
   const [winsCount, setWinsCount] = useState(5)
   const [selectedOptions, setSelectedOptions] = useState([])
+  const [appliedCoupon, setAppliedCoupon] = useState(null)
   const [user, setUser] = useState(null)
   const router = useRouter()
   const { toast } = useToast()
@@ -114,6 +115,22 @@ export default function EloBoostPage({ showHeader = true }) {
     return price
   }
 
+  // Calcular preço com desconto de cupom
+  const calculateFinalPrice = () => {
+    const priceBeforeDiscount = calculateTotalPrice()
+    
+    if (!appliedCoupon) {
+      return priceBeforeDiscount
+    }
+
+    const discount = (priceBeforeDiscount * appliedCoupon.discount) / 100
+    return priceBeforeDiscount - discount
+  }
+
+  const handleCouponApplied = (couponData) => {
+    setAppliedCoupon(couponData)
+  }
+
   const handleToggleOption = (option) => {
     if (selectedOptions.some(opt => opt.id === option.id)) {
       setSelectedOptions(selectedOptions.filter(opt => opt.id !== option.id))
@@ -162,6 +179,7 @@ export default function EloBoostPage({ showHeader = true }) {
 
     const basePrice = calculateBasePrice()
     const totalPrice = calculateTotalPrice()
+    const finalPrice = calculateFinalPrice()
 
     const orderData = {
       clientId: user.id,
@@ -174,9 +192,9 @@ export default function EloBoostPage({ showHeader = true }) {
       serviceType,
       originalPrice: basePrice.toFixed(2),
       price: basePrice.toFixed(2),
-      finalPrice: totalPrice.toFixed(2),
-      discountCode: null,
-      discountPercentage: 0,
+      finalPrice: finalPrice.toFixed(2),
+      discountCode: appliedCoupon?.code || null,
+      discountPercentage: appliedCoupon?.discount || 0,
       boosterId: null,
       boosterName: null,
     }
@@ -200,6 +218,7 @@ export default function EloBoostPage({ showHeader = true }) {
 
   const basePrice = calculateBasePrice()
   const totalPrice = calculateTotalPrice()
+  const finalPrice = calculateFinalPrice()
 
   return (
     <div className={showHeader ? "min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950" : ""}>
@@ -336,6 +355,9 @@ export default function EloBoostPage({ showHeader = true }) {
               basePrice={basePrice}
               selectedOptions={selectedOptions}
               totalPrice={totalPrice}
+              finalPrice={finalPrice}
+              appliedCoupon={appliedCoupon}
+              onCouponApplied={handleCouponApplied}
               onCheckout={handleCheckout}
               serviceType={serviceType}
             />

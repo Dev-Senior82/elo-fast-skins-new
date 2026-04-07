@@ -2,6 +2,7 @@
 
 import { ShoppingCart, TrendingUp, Award } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import CouponInput from './CouponInput'
 
 export default function OrderSummary({ 
   currentRank, 
@@ -9,10 +10,14 @@ export default function OrderSummary({
   basePrice, 
   selectedOptions,
   totalPrice,
+  finalPrice,
+  appliedCoupon,
+  onCouponApplied,
   serviceType,
   onCheckout 
 }) {
   const optionsTotal = selectedOptions.reduce((sum, opt) => sum + opt.percentage, 0)
+  const hasDiscount = appliedCoupon && appliedCoupon.discount > 0
 
   return (
     <div className="sticky top-6 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border-2 border-purple-500/30 p-6 space-y-6">
@@ -83,14 +88,49 @@ export default function OrderSummary({
         )}
       </div>
 
+      {/* Cupom de Desconto */}
+      <div className="pt-4 border-t border-slate-700">
+        <h3 className="text-sm font-semibold text-slate-300 mb-3">Cupom de Desconto</h3>
+        <CouponInput 
+          onCouponApplied={onCouponApplied}
+          totalBeforeDiscount={totalPrice}
+        />
+      </div>
+
       {/* Total */}
       <div className="pt-4 border-t-2 border-purple-500/30">
-        <div className="flex justify-between items-center mb-6">
-          <span className="text-lg font-bold text-white">Preço Total</span>
-          <span className="text-3xl font-black bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-lg font-bold text-white">
+            {hasDiscount ? 'Subtotal' : 'Preço Total'}
+          </span>
+          <span className={`
+            text-3xl font-black 
+            ${hasDiscount 
+              ? 'line-through text-slate-500 text-xl' 
+              : 'bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent'
+            }
+          `}>
             R$ {totalPrice.toFixed(2)}
           </span>
         </div>
+
+        {/* Preço final com desconto */}
+        {hasDiscount && (
+          <div className="flex justify-between items-center mb-6 animate-fade-in">
+            <span className="text-lg font-bold text-green-400">Preço Final</span>
+            <span className="text-4xl font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent animate-pulse-slow">
+              R$ {finalPrice.toFixed(2)}
+            </span>
+          </div>
+        )}
+
+        {hasDiscount && (
+          <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg animate-scale-in">
+            <p className="text-center text-sm font-bold text-green-400">
+              🎉 Você economizou R$ {(totalPrice - finalPrice).toFixed(2)}!
+            </p>
+          </div>
+        )}
 
         {/* Checkout Button */}
         <Button
