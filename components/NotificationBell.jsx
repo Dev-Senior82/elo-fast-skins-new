@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Bell } from 'lucide-react'
+import { Bell, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { getBoosterNotifications, markNotificationAsRead } from '@/app/actions/orders'
+import { getBoosterNotifications, markNotificationAsRead, deleteNotification } from '@/app/actions/orders'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
@@ -28,7 +28,7 @@ export default function NotificationBell() {
     setUser(userData)
     loadNotifications(userData.id)
 
-    // Subscrever a notificações em tempo real
+    // Subscrever a notificações em tempo real (FILTRADO POR USER_ID)
     const channel = supabase
       .channel('notifications')
       .on(
@@ -37,10 +37,21 @@ export default function NotificationBell() {
           event: 'INSERT',
           schema: 'public',
           table: 'notifications',
-          filter: `booster_id=eq.${userData.id}`,
+          filter: `user_id=eq.${userData.id}`,
         },
         (payload) => {
           setNotifications(prev => [payload.new, ...prev])
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'notifications',
+        },
+        (payload) => {
+          setNotifications(prev => prev.filter(n => n.id !== payload.old.id))
         }
       )
       .subscribe()
@@ -62,6 +73,14 @@ export default function NotificationBell() {
       await markNotificationAsRead(notification.id)
     }
     router.push(`/order/${notification.order_id}`)
+  }
+
+  const handleDeleteNotification = async (e, notificationId) => {
+    e.stopPropagation() // Evitar disparar o click do item
+    const result = await deleteNotification(notificationId)
+    if (result.success) {
+      setNotifications(prev => prev.filter(n => n.id !== notificationId))
+    }
   }
 
   if (!user) return null
@@ -96,16 +115,25 @@ export default function NotificationBell() {
               <DropdownMenuItem
                 key={notification.id}
                 onClick={() => handleNotificationClick(notification)}
-                className={`cursor-pointer ${
+                className={`cursor-pointer relative group ${
                   !notification.read ? 'bg-primary-500/10' : ''
                 }`}
               >
-                <div className="flex flex-col gap-1 w-full">
+                <div className="flex flex-col gap-1 w-full pr-6">
                   <p className="text-sm font-medium">{notification.message}</p>
                   <p className="text-xs text-muted-foreground">
                     {new Date(notification.created_at).toLocaleString('pt-BR')}
                   </p>
                 </div>
+                {/* Botão de deletar */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20"
+                  onClick={(e) => handleDeleteNotification(e, notification.id)}
+                >
+                  <X className="h-3 w-3 text-red-500" />
+                </Button>
               </DropdownMenuItem>
             ))
           )}

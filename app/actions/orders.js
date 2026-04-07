@@ -6,6 +6,10 @@ import { v4 as uuidv4 } from 'uuid'
 // Criar novo pedido
 export async function createOrder(orderData) {
   try {
+    // Calcular expiração da reserva (3 horas a partir de agora)
+    const reservationExpiry = new Date()
+    reservationExpiry.setHours(reservationExpiry.getHours() + 3)
+
     const order = {
       id: uuidv4(),
       client_id: orderData.clientId || null,
@@ -22,6 +26,11 @@ export async function createOrder(orderData) {
       final_price: parseFloat(orderData.finalPrice || orderData.price),
       booster_id: orderData.boosterId || null,
       booster_name: orderData.boosterName || null,
+      // NOVO: Campos de reserva
+      reserved_for_booster_id: orderData.boosterId || null, // Reservar para booster específico
+      reservation_expires_at: orderData.boosterId ? reservationExpiry.toISOString() : null,
+      accepted_by_booster_id: null,
+      accepted_at: null,
       payment_status: 'pending',
       payment_proof: null,
       status: 'pending',
@@ -32,12 +41,13 @@ export async function createOrder(orderData) {
 
     if (error) throw error
 
-    // Criar notificação para o booster
-    if (order.booster_id) {
+    // Criar notificação PRIVADA para o booster específico
+    if (order.reserved_for_booster_id) {
       await createNotification({
-        boosterId: order.booster_id,
+        userId: order.reserved_for_booster_id,
+        userType: 'booster',
         orderId: order.id,
-        message: `1x venda = ${order.current_rank} → ${order.desired_rank}`,
+        message: `Nova venda reservada: ${order.current_rank} → ${order.desired_rank} - R$ ${order.final_price}`,
       })
     }
 
@@ -65,12 +75,15 @@ export async function getOrderById(orderId) {
   }
 }
 
-// Criar notificação
+// Criar notificação (AGORA COM PRIVACIDADE)
 export async function createNotification(notificationData) {
   try {
     const notification = {
       id: uuidv4(),
-      booster_id: notificationData.boosterId,
+      // NOVO: Suporte a notificações privadas por user_id
+      user_id: notificationData.userId || notificationData.boosterId,
+      user_type: notificationData.userType || 'booster',
+      booster_id: notificationData.boosterId || null, // Backward compatibility
       order_id: notificationData.orderId,
       message: notificationData.message,
       read: false,
@@ -87,19 +100,35 @@ export async function createNotification(notificationData) {
   }
 }
 
-// Buscar notificações do booster
+// Buscar notificações do booster (AGORA PRIVADAS)
 export async function getBoosterNotifications(boosterId) {
   try {
     const { data, error } = await supabase
       .from('notifications')
       .select('*')
-      .eq('booster_id', boosterId)
+      .or(`user_id.eq.${boosterId},booster_id.eq.${boosterId}`) // Suportar campo novo e antigo
       .order('created_at', { ascending: false })
 
     if (error) throw error
     return { success: true, data: data || [] }
   } catch (error) {
     console.error('Error fetching notifications:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// NOVO: Deletar notificação
+export async function deleteNotification(notificationId) {
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .delete()
+      .eq('id', notificationId)
+
+    if (error) throw error
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting notification:', error)
     return { success: false, error: error.message }
   }
 }
