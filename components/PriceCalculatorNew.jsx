@@ -8,17 +8,15 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { TrendingUp, Zap, Star, Gift, AlertCircle, Trophy, Minus, Plus } from 'lucide-react'
+import { TrendingUp, Zap, Star, Gift, AlertCircle, Minus, Plus, Sparkles } from 'lucide-react'
 import { getActiveBoosters } from '@/app/actions/boosters'
 import { createOrder } from '@/app/actions/orders'
 import { validateDiscountCode, incrementDiscountCodeUsage, markFirstPurchaseDiscountUsed } from '@/app/actions/clients'
 import { useToast } from '@/hooks/use-toast'
 import { EXTRA_SERVICES } from '@/lib/constants'
+import { Checkbox } from '@/components/ui/checkbox'
 import Link from 'next/link'
-import BoosterInfoPanel from './BoosterInfoPanel'
-import ExtraServicesCard from './ExtraServicesCard'
 
-// Elos com divisões
 const eloTiers = [
   { value: 'ferro4', label: 'Ferro IV', solo: 5.31, duo: 7.44 },
   { value: 'ferro3', label: 'Ferro III', solo: 5.58, duo: 7.81 },
@@ -66,7 +64,7 @@ export default function PriceCalculatorNew() {
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState(null)
   const [selectedExtras, setSelectedExtras] = useState([])
-  const [winsCount, setWinsCount] = useState(3) // Para elos Mestre+
+  const [winsCount, setWinsCount] = useState(3)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -85,12 +83,10 @@ export default function PriceCalculatorNew() {
     }
   }
 
-  // Verificar se elo é por vitória
   const isWinBasedElo = (eloValue) => {
     return ['mestre', 'graomestre', 'challenger'].includes(eloValue)
   }
 
-  // Calcular preço
   const calculatePrice = () => {
     if (!currentElo || !desiredElo) return 0
 
@@ -101,11 +97,9 @@ export default function PriceCalculatorNew() {
 
     let basePrice = 0
 
-    // Se desejado é elo por vitória
     if (isWinBasedElo(desiredElo)) {
       basePrice = (desired.perWin || 0) * winsCount
     } else {
-      // Cálculo normal por índice
       const currentIndex = eloTiers.indexOf(current)
       const desiredIndex = eloTiers.indexOf(desired)
 
@@ -121,7 +115,6 @@ export default function PriceCalculatorNew() {
       }
     }
 
-    // Aplicar bônus do booster selecionado
     if (selectedBooster && selectedBooster.price_modifier) {
       basePrice *= (1 + selectedBooster.price_modifier / 100)
     }
@@ -129,25 +122,21 @@ export default function PriceCalculatorNew() {
     return basePrice
   }
 
-  // Calcular preço com extras
   const calculateFinalPrice = () => {
     let price = calculatePrice()
 
-    // Aplicar extras
     const extrasPercentage = EXTRA_SERVICES
       .filter(s => selectedExtras.includes(s.id))
       .reduce((sum, s) => sum + s.percentage, 0)
 
     price *= (1 + extrasPercentage / 100)
 
-    // Aplicar desconto de código
     if (validatedDiscount) {
       price *= (1 - validatedDiscount.percentage / 100)
     }
 
-    // Aplicar desconto de primeira compra
     if (user && !user.firstPurchaseDiscountUsed && !validatedDiscount) {
-      price *= 0.9 // 10% off
+      price *= 0.9
     }
 
     return price
@@ -174,6 +163,14 @@ export default function PriceCalculatorNew() {
     }
 
     setValidatingCode(false)
+  }
+
+  const handleExtraToggle = (serviceId) => {
+    if (selectedExtras.includes(serviceId)) {
+      setSelectedExtras(selectedExtras.filter(id => id !== serviceId))
+    } else {
+      setSelectedExtras([...selectedExtras, serviceId])
+    }
   }
 
   const handleSubmit = async () => {
@@ -221,12 +218,10 @@ export default function PriceCalculatorNew() {
     const result = await createOrder(orderData)
 
     if (result.success) {
-      // Incrementar uso do código
       if (validatedDiscount) {
         await incrementDiscountCodeUsage(validatedDiscount.code)
       }
 
-      // Marcar desconto de primeira compra como usado
       if (user && !user.firstPurchaseDiscountUsed && !validatedDiscount) {
         await markFirstPurchaseDiscountUsed(user.id)
       }
@@ -252,267 +247,284 @@ export default function PriceCalculatorNew() {
   const finalPrice = calculateFinalPrice()
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Calculadora Principal */}
-      <div className="lg:col-span-2 space-y-6">
-        <Card className="glass-card border-primary-500/20">
-          <CardHeader>
-            <CardTitle className="text-2xl flex items-center gap-2">
-              <TrendingUp className="h-6 w-6 text-orange-500" />
-              Calculadora de Preço
-            </CardTitle>
-            <CardDescription>
-              Calcule o preço do seu boost e escolha seu booster
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Aviso de Login */}
-            {!user && (
-              <Card className="bg-blue-500/10 border-blue-500/20">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                    <div className="space-y-2">
-                      <p className="text-sm font-semibold">Você precisa ter uma conta!</p>
-                      <p className="text-xs text-muted-foreground">
-                        Para fazer um pedido, você precisa estar logado. Crie sua conta ou faça login.
-                      </p>
-                      <div className="flex gap-2">
-                        <Button asChild size="sm" variant="outline">
-                          <Link href="/client-login">Fazer Login</Link>
-                        </Button>
-                        <Button asChild size="sm" className="bg-blue-500 hover:bg-blue-600">
-                          <Link href="/client-register">Criar Conta</Link>
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Desconto Primeira Compra */}
-            {user && !user.firstPurchaseDiscountUsed && (
-              <Card className="bg-green-500/10 border-green-500/20">
-                <CardContent className="p-4 text-center">
-                  <Gift className="h-8 w-8 mx-auto mb-2 text-green-500" />
-                  <p className="font-semibold text-green-500">🎁 Você tem 10% OFF na primeira compra!</p>
-                  <p className="text-xs text-muted-foreground mt-1">Desconto aplicado automaticamente</p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Elo Atual - SELECT SIMPLES */}
-            <div className="space-y-2">
-              <Label>Elo Atual</Label>
-              <Select value={currentElo} onValueChange={setCurrentElo}>
-                <SelectTrigger className="bg-white/50 dark:bg-black/50">
-                  <SelectValue placeholder="Selecione seu elo atual" />
-                </SelectTrigger>
-                <SelectContent className="max-h-[300px]">
-                  {eloTiers.map((elo) => (
-                    <SelectItem key={elo.value} value={elo.value}>
-                      {elo.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Elo Desejado - SELECT SIMPLES */}
-            <div className="space-y-2">
-              <Label>Elo Desejado</Label>
-              <Select value={desiredElo} onValueChange={setDesiredElo}>
-                <SelectTrigger className="bg-white/50 dark:bg-black/50">
-                  <SelectValue placeholder="Selecione seu elo desejado" />
-                </SelectTrigger>
-                <SelectContent className="max-h-[300px]">
-                  {eloTiers.map((elo) => (
-                    <SelectItem key={elo.value} value={elo.value}>
-                      {elo.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Seletor de Vitórias (para Mestre+) */}
-            {desiredElo && isWinBasedElo(desiredElo) && (
-              <Card className="p-4 glass-card">
-                <Label className="mb-3 block text-center">Quantidade de Vitórias</Label>
-                <div className="flex items-center justify-center gap-4">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setWinsCount(Math.max(1, winsCount - 1))}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <div className="text-3xl font-bold text-primary-500 w-16 text-center">
-                    {winsCount}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setWinsCount(Math.min(20, winsCount + 1))}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </Card>
-            )}
-
-            {/* Tipo de Serviço */}
-            {desiredElo && !isWinBasedElo(desiredElo) && (
-              <div className="space-y-2">
-                <Label>Tipo de Serviço</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    variant={serviceType === 'solo' ? 'default' : 'outline'}
-                    onClick={() => setServiceType('solo')}
-                    className="w-full"
-                  >
-                    <Zap className="h-4 w-4 mr-2" />
-                    Solo
-                  </Button>
-                  <Button
-                    variant={serviceType === 'duo' ? 'default' : 'outline'}
-                    onClick={() => setServiceType('duo')}
-                    className="w-full"
-                  >
-                    <Star className="h-4 w-4 mr-2" />
-                    Duo
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Seleção de Booster */}
-            {boosters.length > 0 && (
-              <div className="space-y-2">
-                <Label>Escolha seu Booster (Opcional)</Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {boosters.map(booster => (
-                    <Button
-                      key={booster.id}
-                      variant={selectedBooster?.id === booster.id ? 'default' : 'outline'}
-                      onClick={() => setSelectedBooster(booster)}
-                      className="flex flex-col h-auto py-3"
-                    >
-                      <span className="font-bold">{booster.name}</span>
-                      <Badge variant="secondary" className="mt-1">
-                        +{booster.price_modifier}%
-                      </Badge>
+    <Card className="glass-card border-primary-500/20">
+      <CardHeader>
+        <CardTitle className="text-2xl flex items-center gap-2">
+          <TrendingUp className="h-6 w-6 text-orange-500" />
+          Calculadora de Preço
+        </CardTitle>
+        <CardDescription>
+          Calcule o preço do seu boost e escolha seu booster
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Aviso de Login */}
+        {!user && (
+          <Card className="bg-blue-500/10 border-blue-500/20">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold">Você precisa ter uma conta!</p>
+                  <p className="text-xs text-muted-foreground">
+                    Para fazer um pedido, você precisa estar logado. Crie sua conta ou faça login.
+                  </p>
+                  <div className="flex gap-2">
+                    <Button asChild size="sm" variant="outline">
+                      <Link href="/client-login">Fazer Login</Link>
                     </Button>
-                  ))}
+                    <Button asChild size="sm" className="bg-blue-500 hover:bg-blue-600">
+                      <Link href="/client-register">Criar Conta</Link>
+                    </Button>
+                  </div>
                 </div>
               </div>
-            )}
-
-            {/* Código de Desconto */}
-            <div className="space-y-2">
-              <Label>Código de Desconto (Opcional)</Label>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Digite o código"
-                  value={discountCode}
-                  onChange={(e) => setDiscountCode(e.target.value)}
-                  disabled={!!validatedDiscount}
-                />
-                <Button
-                  onClick={handleValidateCode}
-                  disabled={validatingCode || !!validatedDiscount}
-                >
-                  {validatedDiscount ? 'Aplicado' : 'Validar'}
-                </Button>
-              </div>
-              {validatedDiscount && (
-                <p className="text-sm text-green-500">
-                  ✓ Desconto de {validatedDiscount.percentage}% aplicado
-                </p>
-              )}
-            </div>
-
-            {/* Resumo do Preço */}
-            {price > 0 && (
-              <Card className="bg-gradient-to-r from-primary-500/10 to-purple-500/10 border-primary-500/20">
-                <CardContent className="p-6 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Preço Base:</span>
-                    <span className="font-semibold">R$ {price.toFixed(2)}</span>
-                  </div>
-                  
-                  {selectedExtras.length > 0 && (
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Serviços Extras:</span>
-                      <span className="text-purple-500">
-                        +{EXTRA_SERVICES
-                          .filter(s => selectedExtras.includes(s.id))
-                          .reduce((sum, s) => sum + s.percentage, 0)}%
-                      </span>
-                    </div>
-                  )}
-
-                  {(validatedDiscount || (user && !user.firstPurchaseDiscountUsed)) && (
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Desconto:</span>
-                      <span className="text-green-500">
-                        -{validatedDiscount?.percentage || 10}%
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="border-t pt-3 flex justify-between items-center">
-                    <span className="text-lg font-bold">Total do Pedido:</span>
-                    <span className="text-3xl font-bold text-primary-500">
-                      R$ {finalPrice.toFixed(2)}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Botão de Fazer Pedido */}
-            <Button
-              onClick={handleSubmit}
-              disabled={loading || !currentElo || !desiredElo || !user}
-              className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold text-lg h-12"
-            >
-              {loading ? 'Processando...' : 'Fazer Pedido'}
-            </Button>
-
-            {!user && (
-              <p className="text-center text-sm text-muted-foreground">
-                Não tem conta?{' '}
-                <Link href="/client-register" className="text-primary-500 hover:underline font-semibold">
-                  Criar conta grátis
-                </Link>
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Painel Lateral */}
-      <div className="space-y-6">
-        {/* Painel Info do Booster */}
-        {selectedBooster ? (
-          <BoosterInfoPanel booster={selectedBooster} />
-        ) : (
-          <Card className="glass-card border-primary-500/20">
-            <CardContent className="py-12 text-center text-muted-foreground">
-              <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-sm">Selecione um booster para ver suas informações</p>
             </CardContent>
           </Card>
         )}
 
+        {/* Desconto Primeira Compra */}
+        {user && !user.firstPurchaseDiscountUsed && (
+          <Card className="bg-green-500/10 border-green-500/20">
+            <CardContent className="p-4 text-center">
+              <Gift className="h-8 w-8 mx-auto mb-2 text-green-500" />
+              <p className="font-semibold text-green-500">🎁 Você tem 10% OFF na primeira compra!</p>
+              <p className="text-xs text-muted-foreground mt-1">Desconto aplicado automaticamente</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Elo Atual */}
+        <div className="space-y-2">
+          <Label>Elo Atual</Label>
+          <Select value={currentElo} onValueChange={setCurrentElo}>
+            <SelectTrigger className="bg-white/50 dark:bg-black/50">
+              <SelectValue placeholder="Selecione seu elo atual" />
+            </SelectTrigger>
+            <SelectContent className="max-h-[300px]">
+              {eloTiers.map((elo) => (
+                <SelectItem key={elo.value} value={elo.value}>
+                  {elo.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Elo Desejado */}
+        <div className="space-y-2">
+          <Label>Elo Desejado</Label>
+          <Select value={desiredElo} onValueChange={setDesiredElo}>
+            <SelectTrigger className="bg-white/50 dark:bg-black/50">
+              <SelectValue placeholder="Selecione seu elo desejado" />
+            </SelectTrigger>
+            <SelectContent className="max-h-[300px]">
+              {eloTiers.map((elo) => (
+                <SelectItem key={elo.value} value={elo.value}>
+                  {elo.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Seletor de Vitórias (para Mestre+) */}
+        {desiredElo && isWinBasedElo(desiredElo) && (
+          <Card className="p-4 glass-card border-orange-500/20">
+            <Label className="mb-3 block text-center">Quantidade de Vitórias</Label>
+            <div className="flex items-center justify-center gap-4">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setWinsCount(Math.max(1, winsCount - 1))}
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <div className="text-3xl font-bold text-primary-500 w-16 text-center">
+                {winsCount}
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setWinsCount(Math.min(20, winsCount + 1))}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Tipo de Serviço */}
+        {desiredElo && !isWinBasedElo(desiredElo) && (
+          <div className="space-y-2">
+            <Label>Tipo de Serviço</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant={serviceType === 'solo' ? 'default' : 'outline'}
+                onClick={() => setServiceType('solo')}
+                className="w-full"
+              >
+                <Zap className="h-4 w-4 mr-2" />
+                Solo
+              </Button>
+              <Button
+                variant={serviceType === 'duo' ? 'default' : 'outline'}
+                onClick={() => setServiceType('duo')}
+                className="w-full"
+              >
+                <Star className="h-4 w-4 mr-2" />
+                Duo
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Serviços Extras */}
-        <ExtraServicesCard
-          selectedServices={selectedExtras}
-          onServicesChange={setSelectedExtras}
-        />
-      </div>
-    </div>
+        {EXTRA_SERVICES.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-purple-500" />
+              <Label>Serviços Extras</Label>
+            </div>
+            <Card className="p-4 glass-card border-purple-500/20">
+              <div className="space-y-3">
+                {EXTRA_SERVICES.map((service) => {
+                  const isSelected = selectedExtras.includes(service.id)
+                  return (
+                    <div
+                      key={service.id}
+                      onClick={() => handleExtraToggle(service.id)}
+                      className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer hover:border-primary-500/50 ${
+                        isSelected 
+                          ? 'bg-primary-500/10 border-primary-500/50' 
+                          : 'bg-muted/30 border-border/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={() => handleExtraToggle(service.id)}
+                          className="pointer-events-none"
+                        />
+                        <span className="text-sm font-medium">{service.label}</span>
+                      </div>
+                      <Badge 
+                        variant={isSelected ? 'default' : 'outline'}
+                        className={isSelected ? 'bg-green-500' : ''}
+                      >
+                        +{service.percentage}%
+                      </Badge>
+                    </div>
+                  )
+                })}
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* Seleção de Booster */}
+        {boosters.length > 0 && (
+          <div className="space-y-2">
+            <Label>Escolha seu Booster (Opcional)</Label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {boosters.map(booster => (
+                <Button
+                  key={booster.id}
+                  variant={selectedBooster?.id === booster.id ? 'default' : 'outline'}
+                  onClick={() => setSelectedBooster(booster)}
+                  className="flex flex-col h-auto py-3"
+                >
+                  <span className="font-bold">{booster.name}</span>
+                  <Badge variant="secondary" className="mt-1">
+                    +{booster.price_modifier}%
+                  </Badge>
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Código de Desconto */}
+        <div className="space-y-2">
+          <Label>Código de Desconto (Opcional)</Label>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Digite o código"
+              value={discountCode}
+              onChange={(e) => setDiscountCode(e.target.value)}
+              disabled={!!validatedDiscount}
+            />
+            <Button
+              onClick={handleValidateCode}
+              disabled={validatingCode || !!validatedDiscount}
+            >
+              {validatedDiscount ? 'Aplicado' : 'Validar'}
+            </Button>
+          </div>
+          {validatedDiscount && (
+            <p className="text-sm text-green-500">
+              ✓ Desconto de {validatedDiscount.percentage}% aplicado
+            </p>
+          )}
+        </div>
+
+        {/* Resumo do Preço */}
+        {price > 0 && (
+          <Card className="bg-gradient-to-r from-primary-500/10 to-purple-500/10 border-primary-500/20">
+            <CardContent className="p-6 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Preço Base:</span>
+                <span className="font-semibold">R$ {price.toFixed(2)}</span>
+              </div>
+              
+              {selectedExtras.length > 0 && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Serviços Extras:</span>
+                  <span className="text-purple-500">
+                    +{EXTRA_SERVICES
+                      .filter(s => selectedExtras.includes(s.id))
+                      .reduce((sum, s) => sum + s.percentage, 0)}%
+                  </span>
+                </div>
+              )}
+
+              {(validatedDiscount || (user && !user.firstPurchaseDiscountUsed)) && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Desconto:</span>
+                  <span className="text-green-500">
+                    -{validatedDiscount?.percentage || 10}%
+                  </span>
+                </div>
+              )}
+
+              <div className="border-t pt-3 flex justify-between items-center">
+                <span className="text-lg font-bold">Total do Pedido:</span>
+                <span className="text-3xl font-bold text-primary-500">
+                  R$ {finalPrice.toFixed(2)}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Botão de Fazer Pedido */}
+        <Button
+          onClick={handleSubmit}
+          disabled={loading || !currentElo || !desiredElo || !user}
+          className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold text-lg h-12"
+        >
+          {loading ? 'Processando...' : 'Fazer Pedido'}
+        </Button>
+
+        {!user && (
+          <p className="text-center text-sm text-muted-foreground">
+            Não tem conta?{' '}
+            <Link href="/client-register" className="text-primary-500 hover:underline font-semibold">
+              Criar conta grátis
+            </Link>
+          </p>
+        )}
+      </CardContent>
+    </Card>
   )
 }
