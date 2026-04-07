@@ -6,7 +6,7 @@ import { Check } from 'lucide-react'
 export default function BoostOptions({ selectedOptions, onToggleOption }) {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-white">Boost Options</h3>
+      <h3 className="text-lg font-semibold text-white">Opções de Boost</h3>
       
       <div className="grid grid-cols-2 gap-4">
         {BOOST_OPTIONS.map((option) => {

@@ -13,7 +13,10 @@ import OrderSummary from './OrderSummary'
 
 export default function EloBoostPage() {
   const [currentRank, setCurrentRank] = useState(null)
+  const [currentDivision, setCurrentDivision] = useState(null)
   const [desiredRank, setDesiredRank] = useState(null)
+  const [desiredDivision, setDesiredDivision] = useState(null)
+  const [serviceType, setServiceType] = useState('solo')
   const [winsCount, setWinsCount] = useState(5)
   const [selectedOptions, setSelectedOptions] = useState([])
   const [user, setUser] = useState(null)
@@ -27,31 +30,74 @@ export default function EloBoostPage() {
     }
   }, [])
 
-  // Verificar se elo é por vitória
-  const isWinBased = (rank) => {
-    return rank && !rank.divisions.length
+  const handleCurrentRankSelect = (rank, division) => {
+    setCurrentRank(rank)
+    setCurrentDivision(division)
   }
 
-  // Calcular preço base
+  const handleDesiredRankSelect = (rank, division) => {
+    setDesiredRank(rank)
+    setDesiredDivision(division)
+  }
+
+  // Verificar se elo é por vitória
+  const isWinBased = (rank) => {
+    return rank && rank.divisions.length === 0
+  }
+
+  // NOVO CÁLCULO: Somar divisão por divisão
   const calculateBasePrice = () => {
     if (!currentRank || !desiredRank) return 0
 
-    // Se desejado é por vitória (Master+)
+    // Se desejado é por vitória (Mestre+)
     if (isWinBased(desiredRank)) {
       return desiredRank.pricePerWin * winsCount
     }
 
-    // Cálculo normal por divisões
-    const currentIndex = RANKS.findIndex(r => r.tier === currentRank.tier)
-    const desiredIndex = RANKS.findIndex(r => r.tier === desiredRank.tier)
+    // Verificar se ambos têm divisões selecionadas
+    if (!currentDivision || !desiredDivision) return 0
 
-    if (desiredIndex <= currentIndex) return 0
+    const currentRankIndex = RANKS.findIndex(r => r.tier === currentRank.tier)
+    const desiredRankIndex = RANKS.findIndex(r => r.tier === desiredRank.tier)
+
+    if (desiredRankIndex < currentRankIndex) return 0
 
     let total = 0
-    for (let i = currentIndex; i < desiredIndex; i++) {
-      const rank = RANKS[i]
-      if (rank.pricePerDivision) {
-        total += rank.pricePerDivision * rank.divisions.length
+    const priceKey = serviceType === 'solo' ? 'solo' : 'duo'
+
+    // Caso 1: Mesmo tier, diferentes divisões
+    if (currentRankIndex === desiredRankIndex) {
+      const currentDivIndex = currentRank.divisions.findIndex(d => d.division === currentDivision.division)
+      const desiredDivIndex = desiredRank.divisions.findIndex(d => d.division === desiredDivision.division)
+
+      if (desiredDivIndex <= currentDivIndex) return 0
+
+      for (let i = currentDivIndex; i < desiredDivIndex; i++) {
+        total += currentRank.divisions[i][priceKey]
+      }
+    }
+    // Caso 2: Tiers diferentes
+    else {
+      // Somar divisões restantes do tier atual
+      const currentDivIndex = currentRank.divisions.findIndex(d => d.division === currentDivision.division)
+      for (let i = currentDivIndex; i < currentRank.divisions.length; i++) {
+        total += currentRank.divisions[i][priceKey]
+      }
+
+      // Somar todos os tiers intermediários
+      for (let i = currentRankIndex + 1; i < desiredRankIndex; i++) {
+        const rank = RANKS[i]
+        if (rank.divisions.length > 0) {
+          rank.divisions.forEach(div => {
+            total += div[priceKey]
+          })
+        }
+      }
+
+      // Somar divisões do tier desejado até a divisão desejada
+      const desiredDivIndex = desiredRank.divisions.findIndex(d => d.division === desiredDivision.division)
+      for (let i = 0; i < desiredDivIndex; i++) {
+        total += desiredRank.divisions[i][priceKey]
       }
     }
 
@@ -79,8 +125,8 @@ export default function EloBoostPage() {
   const handleCheckout = async () => {
     if (!user) {
       toast({
-        title: 'Login Required',
-        description: 'Please login to purchase a boost.',
+        title: 'Login Necessário',
+        description: 'Faça login para comprar um boost.',
         variant: 'destructive',
       })
       router.push('/client-login')
@@ -89,8 +135,26 @@ export default function EloBoostPage() {
 
     if (!currentRank || !desiredRank) {
       toast({
-        title: 'Select Ranks',
-        description: 'Please select both current and desired ranks.',
+        title: 'Selecione os Elos',
+        description: 'Por favor, selecione o elo atual e desejado.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    if (!isWinBased(currentRank) && !currentDivision) {
+      toast({
+        title: 'Selecione a Divisão',
+        description: 'Por favor, selecione a divisão atual.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    if (!isWinBased(desiredRank) && !desiredDivision) {
+      toast({
+        title: 'Selecione a Divisão',
+        description: 'Por favor, selecione a divisão desejada.',
         variant: 'destructive',
       })
       return
@@ -103,11 +167,11 @@ export default function EloBoostPage() {
       clientId: user.id,
       clientName: user.name,
       clientContact: user.phone || user.discord,
-      currentRank: currentRank.label,
+      currentRank: currentDivision?.label || currentRank.label,
       desiredRank: isWinBased(desiredRank) 
-        ? `${desiredRank.label} (${winsCount} wins)` 
-        : desiredRank.label,
-      serviceType: 'solo',
+        ? `${desiredRank.label} (${winsCount} vitórias)` 
+        : desiredDivision?.label || desiredRank.label,
+      serviceType,
       originalPrice: basePrice.toFixed(2),
       price: basePrice.toFixed(2),
       finalPrice: totalPrice.toFixed(2),
@@ -121,13 +185,13 @@ export default function EloBoostPage() {
 
     if (result.success) {
       toast({
-        title: 'Order Created!',
-        description: 'Redirecting to payment...',
+        title: 'Pedido Criado!',
+        description: 'Redirecionando para o pagamento...',
       })
       router.push(`/payment/${result.data.id}`)
     } else {
       toast({
-        title: 'Error',
+        title: 'Erro',
         description: result.error,
         variant: 'destructive',
       })
@@ -145,11 +209,11 @@ export default function EloBoostPage() {
           <div className="flex items-center gap-4 mb-4">
             <Sparkles className="w-10 h-10 text-purple-400" />
             <h1 className="text-5xl font-black text-white tracking-tight">
-              LOL ELO BOOST
+              ELO BOOST LOL
             </h1>
           </div>
           <p className="text-xl text-slate-300 max-w-2xl">
-            Professional boosting service • Fast delivery • 100% Safe
+            Serviço profissional de boost • Entrega rápida • 100% Seguro
           </p>
         </div>
       </div>
@@ -163,8 +227,9 @@ export default function EloBoostPage() {
             <div className="bg-slate-900/50 rounded-2xl p-8 border border-slate-800">
               <RankSelector
                 selectedRank={currentRank}
-                onRankSelect={setCurrentRank}
-                label="1️⃣ Select Your Current Rank"
+                selectedDivision={currentDivision}
+                onRankSelect={handleCurrentRankSelect}
+                label="1️⃣ Selecione seu Elo Atual"
               />
             </div>
 
@@ -172,16 +237,54 @@ export default function EloBoostPage() {
             <div className="bg-slate-900/50 rounded-2xl p-8 border border-slate-800">
               <RankSelector
                 selectedRank={desiredRank}
-                onRankSelect={setDesiredRank}
-                label="2️⃣ Select Your Desired Rank"
+                selectedDivision={desiredDivision}
+                onRankSelect={handleDesiredRankSelect}
+                label="2️⃣ Selecione seu Elo Desejado"
               />
             </div>
+
+            {/* Tipo de Serviço - SOLO/DUO */}
+            {desiredRank && !isWinBased(desiredRank) && (
+              <div className="bg-slate-900/50 rounded-2xl p-8 border border-slate-800">
+                <h3 className="text-lg font-semibold text-white mb-4">Tipo de Serviço</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    onClick={() => setServiceType('solo')}
+                    className={`
+                      p-4 rounded-xl border-2 transition-all duration-300
+                      ${serviceType === 'solo' 
+                        ? 'bg-gradient-to-br from-purple-600/30 to-blue-600/30 border-purple-500 scale-105' 
+                        : 'bg-slate-800/50 border-slate-700 hover:border-slate-600 hover:scale-105'
+                      }
+                    `}
+                  >
+                    <div className="text-3xl mb-2">⚡</div>
+                    <h4 className="text-white font-bold mb-1">Solo</h4>
+                    <p className="text-xs text-slate-400">Booster joga sozinho</p>
+                  </button>
+                  <button
+                    onClick={() => setServiceType('duo')}
+                    className={`
+                      p-4 rounded-xl border-2 transition-all duration-300
+                      ${serviceType === 'duo' 
+                        ? 'bg-gradient-to-br from-purple-600/30 to-blue-600/30 border-purple-500 scale-105' 
+                        : 'bg-slate-800/50 border-slate-700 hover:border-slate-600 hover:scale-105'
+                      }
+                    `}
+                  >
+                    <div className="text-3xl mb-2">👥</div>
+                    <h4 className="text-white font-bold mb-1">Duo</h4>
+                    <p className="text-xs text-slate-400">Jogue junto com o booster</p>
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Wins Selector (for Master+) */}
             {desiredRank && isWinBased(desiredRank) && (
               <div className="bg-gradient-to-br from-purple-900/30 to-blue-900/30 rounded-2xl p-8 border-2 border-purple-500/30 animate-fade-in">
                 <h3 className="text-lg font-semibold text-white mb-6 text-center">
-                  Select Number of Wins
+                  Selecione o Número de Vitórias
                 </h3>
                 <div className="flex items-center justify-center gap-6">
                   <Button
@@ -198,7 +301,7 @@ export default function EloBoostPage() {
                       {winsCount}
                     </div>
                     <div className="text-sm text-slate-400">
-                      Wins @ R$ {desiredRank.pricePerWin}/win
+                      Vitórias @ R$ {desiredRank.pricePerWin.toFixed(2)}/vitória
                     </div>
                   </div>
 
@@ -226,12 +329,13 @@ export default function EloBoostPage() {
           {/* Right Side - Order Summary (30%) */}
           <div className="lg:col-span-1">
             <OrderSummary
-              currentRank={currentRank}
-              desiredRank={desiredRank}
+              currentRank={currentDivision || currentRank}
+              desiredRank={desiredDivision || desiredRank}
               basePrice={basePrice}
               selectedOptions={selectedOptions}
               totalPrice={totalPrice}
               onCheckout={handleCheckout}
+              serviceType={serviceType}
             />
           </div>
         </div>
