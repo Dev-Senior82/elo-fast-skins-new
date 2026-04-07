@@ -27,6 +27,9 @@ export default function ClientLoginPage() {
     if (result.success) {
       localStorage.setItem('client_user', JSON.stringify(result.data))
       
+      // Disparar evento customizado para atualizar a Navbar
+      window.dispatchEvent(new Event('auth-change'))
+      
       toast({
         title: 'Login realizado!',
         description: `Bem-vindo de volta, ${result.data.name}!`,

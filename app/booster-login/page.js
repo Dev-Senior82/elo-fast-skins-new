@@ -28,6 +28,9 @@ export default function BoosterLoginPage() {
       // Salvar dados do usuário no localStorage
       localStorage.setItem('booster_user', JSON.stringify(result.data))
       
+      // Disparar evento customizado para atualizar a Navbar
+      window.dispatchEvent(new Event('auth-change'))
+      
       toast({
         title: 'Login realizado!',
         description: `Bem-vindo, ${result.data.name}!`,

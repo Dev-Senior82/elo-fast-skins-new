@@ -39,6 +39,14 @@ export default async function HomePage() {
                 Boosters profissionais, segurança garantida e suporte 24/7. 
                 Transforme seu jogo com os melhores do Brasil!
               </p>
+              
+              {/* NOVO: Contador de Boosters Online */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/20">
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-green-600 dark:text-green-400 font-semibold">
+                  {Math.floor(Math.random() * (7 - 3 + 1)) + 3} Boosters Online
+                </span>
+              </div>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                 <Button

@@ -3,17 +3,18 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { TrendingUp, Zap, Star, Gift, AlertCircle } from 'lucide-react'
+import { TrendingUp, Zap, Star, Gift, AlertCircle, Trophy } from 'lucide-react'
 import { getActiveBoosters } from '@/app/actions/boosters'
 import { createOrder } from '@/app/actions/orders'
 import { validateDiscountCode, incrementDiscountCodeUsage, markFirstPurchaseDiscountUsed } from '@/app/actions/clients'
 import { useToast } from '@/hooks/use-toast'
 import Link from 'next/link'
+import EloSelect from './EloSelect'
+import BoosterInfoPanel from './BoosterInfoPanel'
 
 const eloTiers = [
   { value: 'ferro4', label: 'Ferro IV', solo: 5.31, duo: 7.44 },
@@ -237,86 +238,77 @@ export default function PriceCalculatorNew() {
   }
 
   return (
-    <Card className="glass-card border-primary-500/20">
-      <CardHeader>
-        <CardTitle className="text-2xl flex items-center gap-2">
-          <TrendingUp className="h-6 w-6 text-orange-500" />
-          Calculadora de Preço
-        </CardTitle>
-        <CardDescription>
-          Calcule o preço do seu boost e escolha seu booster
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Aviso de Login */}
-        {!user && (
-          <Card className="bg-blue-500/10 border-blue-500/20">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                <div className="space-y-2">
-                  <p className="text-sm font-semibold">Você precisa ter uma conta!</p>
-                  <p className="text-xs text-muted-foreground">
-                    Para fazer um pedido, você precisa estar logado. Crie sua conta ou faça login.
-                  </p>
-                  <div className="flex gap-2">
-                    <Button asChild size="sm" variant="outline">
-                      <Link href="/client-login">Fazer Login</Link>
-                    </Button>
-                    <Button asChild size="sm" className="bg-blue-500 hover:bg-blue-600">
-                      <Link href="/client-register">Criar Conta</Link>
-                    </Button>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Calculadora Principal */}
+      <div className="lg:col-span-2">
+        <Card className="glass-card border-primary-500/20">
+          <CardHeader>
+            <CardTitle className="text-2xl flex items-center gap-2">
+              <TrendingUp className="h-6 w-6 text-orange-500" />
+              Calculadora de Preço
+            </CardTitle>
+            <CardDescription>
+              Calcule o preço do seu boost e escolha seu booster
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Aviso de Login */}
+            {!user && (
+              <Card className="bg-blue-500/10 border-blue-500/20">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold">Você precisa ter uma conta!</p>
+                      <p className="text-xs text-muted-foreground">
+                        Para fazer um pedido, você precisa estar logado. Crie sua conta ou faça login.
+                      </p>
+                      <div className="flex gap-2">
+                        <Button asChild size="sm" variant="outline">
+                          <Link href="/client-login">Fazer Login</Link>
+                        </Button>
+                        <Button asChild size="sm" className="bg-blue-500 hover:bg-blue-600">
+                          <Link href="/client-register">Criar Conta</Link>
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                </CardContent>
+              </Card>
+            )}
 
-        {/* Desconto Primeira Compra */}
-        {user && !user.firstPurchaseDiscountUsed && (
-          <Card className="bg-green-500/10 border-green-500/20">
-            <CardContent className="p-4 text-center">
-              <Gift className="h-8 w-8 mx-auto mb-2 text-green-500" />
-              <p className="font-semibold text-green-500">🎁 Você tem 10% OFF na primeira compra!</p>
-              <p className="text-xs text-muted-foreground mt-1">Desconto aplicado automaticamente</p>
-            </CardContent>
-          </Card>
-        )}
+            {/* Desconto Primeira Compra */}
+            {user && !user.firstPurchaseDiscountUsed && (
+              <Card className="bg-green-500/10 border-green-500/20">
+                <CardContent className="p-4 text-center">
+                  <Gift className="h-8 w-8 mx-auto mb-2 text-green-500" />
+                  <p className="font-semibold text-green-500">🎁 Você tem 10% OFF na primeira compra!</p>
+                  <p className="text-xs text-muted-foreground mt-1">Desconto aplicado automaticamente</p>
+                </CardContent>
+              </Card>
+            )}
 
-        {/* Elo Atual */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Elo Atual</label>
-          <Select value={currentElo} onValueChange={setCurrentElo}>
-            <SelectTrigger className="bg-white/50 dark:bg-black/50">
-              <SelectValue placeholder="Selecione seu elo atual" />
-            </SelectTrigger>
-            <SelectContent>
-              {eloTiers.map((elo) => (
-                <SelectItem key={elo.value} value={elo.value}>
-                  {elo.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            {/* Elo Atual - COM IMAGENS */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Elo Atual</label>
+              <EloSelect 
+                value={currentElo}
+                onValueChange={setCurrentElo}
+                placeholder="Selecione seu elo atual"
+                eloTiers={eloTiers}
+              />
+            </div>
 
-        {/* Elo Desejado */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Elo Desejado</label>
-          <Select value={desiredElo} onValueChange={setDesiredElo}>
-            <SelectTrigger className="bg-white/50 dark:bg-black/50">
-              <SelectValue placeholder="Selecione seu elo desejado" />
-            </SelectTrigger>
-            <SelectContent>
-              {eloTiers.map((elo) => (
-                <SelectItem key={elo.value} value={elo.value}>
-                  {elo.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            {/* Elo Desejado - COM IMAGENS */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Elo Desejado</label>
+              <EloSelect 
+                value={desiredElo}
+                onValueChange={setDesiredElo}
+                placeholder="Selecione seu elo desejado"
+                eloTiers={eloTiers}
+              />
+            </div>
 
         {/* Tipo de Serviço */}
         <div className="space-y-2">
@@ -484,5 +476,21 @@ export default function PriceCalculatorNew() {
         )}
       </CardContent>
     </Card>
+    </div>
+
+    {/* Painel Info do Booster - LADO DIREITO */}
+    <div className="lg:col-span-1">
+      {selectedBooster ? (
+        <BoosterInfoPanel booster={selectedBooster} />
+      ) : (
+        <Card className="glass-card border-primary-500/20">
+          <CardContent className="py-12 text-center text-muted-foreground">
+            <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p className="text-sm">Selecione um booster para ver suas informações</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  </div>
   )
 }

@@ -37,6 +37,26 @@ export default function Navbar() {
     if (storedBooster) {
       setBoosterUser(JSON.parse(storedBooster))
     }
+
+    // NOVO: Listener para detectar mudanças no localStorage (login/logout)
+    const handleStorageChange = () => {
+      const client = localStorage.getItem('client_user')
+      const booster = localStorage.getItem('booster_user')
+      
+      setClientUser(client ? JSON.parse(client) : null)
+      setBoosterUser(booster ? JSON.parse(booster) : null)
+    }
+
+    // Listener de storage para quando outra aba faz login/logout
+    window.addEventListener('storage', handleStorageChange)
+
+    // Listener customizado para mudanças na mesma aba
+    window.addEventListener('auth-change', handleStorageChange)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('auth-change', handleStorageChange)
+    }
   }, [])
 
   const handleClientLogout = () => {
