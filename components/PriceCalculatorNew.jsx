@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast'
 import { EXTRA_SERVICES } from '@/lib/constants'
 import { Checkbox } from '@/components/ui/checkbox'
 import Link from 'next/link'
+import BoosterInfoPanel from './BoosterInfoPanel'
 
 const eloTiers = [
   { value: 'ferro4', label: 'Ferro IV', solo: 5.31, duo: 7.44 },
@@ -247,17 +248,20 @@ export default function PriceCalculatorNew() {
   const finalPrice = calculateFinalPrice()
 
   return (
-    <Card className="glass-card border-primary-500/20">
-      <CardHeader>
-        <CardTitle className="text-2xl flex items-center gap-2">
-          <TrendingUp className="h-6 w-6 text-orange-500" />
-          Calculadora de Preço
-        </CardTitle>
-        <CardDescription>
-          Calcule o preço do seu boost e escolha seu booster
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Calculadora Principal - 2/3 */}
+      <div className="lg:col-span-2">
+        <Card className="glass-card border-primary-500/20">
+          <CardHeader>
+            <CardTitle className="text-2xl flex items-center gap-2">
+              <TrendingUp className="h-6 w-6 text-orange-500" />
+              Calculadora de Preço
+            </CardTitle>
+            <CardDescription>
+              Calcule o preço do seu boost e escolha seu booster
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
         {/* Aviso de Login */}
         {!user && (
           <Card className="bg-blue-500/10 border-blue-500/20">
@@ -422,25 +426,28 @@ export default function PriceCalculatorNew() {
           </div>
         )}
 
-        {/* Seleção de Booster */}
+        {/* Seleção de Booster - DROPDOWN */}
         {boosters.length > 0 && (
           <div className="space-y-2">
             <Label>Escolha seu Booster (Opcional)</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {boosters.map(booster => (
-                <Button
-                  key={booster.id}
-                  variant={selectedBooster?.id === booster.id ? 'default' : 'outline'}
-                  onClick={() => setSelectedBooster(booster)}
-                  className="flex flex-col h-auto py-3"
-                >
-                  <span className="font-bold">{booster.name}</span>
-                  <Badge variant="secondary" className="mt-1">
-                    +{booster.price_modifier}%
-                  </Badge>
-                </Button>
-              ))}
-            </div>
+            <Select 
+              value={selectedBooster?.id || ''} 
+              onValueChange={(value) => {
+                const booster = boosters.find(b => b.id === value)
+                setSelectedBooster(booster || null)
+              }}
+            >
+              <SelectTrigger className="bg-white/50 dark:bg-black/50">
+                <SelectValue placeholder="Selecione um booster" />
+              </SelectTrigger>
+              <SelectContent>
+                {boosters.map(booster => (
+                  <SelectItem key={booster.id} value={booster.id}>
+                    {booster.name} (+{booster.price_modifier}%)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         )}
 
@@ -526,5 +533,23 @@ export default function PriceCalculatorNew() {
         )}
       </CardContent>
     </Card>
+    </div>
+
+    {/* Painel Lateral - Informações do Booster - 1/3 */}
+    <div className="lg:col-span-1">
+      {selectedBooster ? (
+        <div className="sticky top-6">
+          <BoosterInfoPanel booster={selectedBooster} />
+        </div>
+      ) : (
+        <Card className="glass-card border-primary-500/20 sticky top-6">
+          <CardContent className="py-12 text-center text-muted-foreground">
+            <Star className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p className="text-sm">Selecione um booster para ver suas informações</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  </div>
   )
 }
