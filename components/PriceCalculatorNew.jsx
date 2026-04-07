@@ -7,15 +7,18 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { TrendingUp, Zap, Star, Gift, AlertCircle, Trophy } from 'lucide-react'
+import { TrendingUp, Zap, Star, Gift, AlertCircle, Trophy, Minus, Plus } from 'lucide-react'
 import { getActiveBoosters } from '@/app/actions/boosters'
 import { createOrder } from '@/app/actions/orders'
 import { validateDiscountCode, incrementDiscountCodeUsage, markFirstPurchaseDiscountUsed } from '@/app/actions/clients'
 import { useToast } from '@/hooks/use-toast'
+import { EXTRA_SERVICES } from '@/lib/constants'
 import Link from 'next/link'
-import EloSelect from './EloSelect'
+import EloVisualSelector from './EloVisualSelector'
 import BoosterInfoPanel from './BoosterInfoPanel'
+import ExtraServicesCard from './ExtraServicesCard'
 
+// Elos com divisões
 const eloTiers = [
   { value: 'ferro4', label: 'Ferro IV', solo: 5.31, duo: 7.44 },
   { value: 'ferro3', label: 'Ferro III', solo: 5.58, duo: 7.81 },
@@ -45,6 +48,10 @@ const eloTiers = [
   { value: 'diamante3', label: 'Diamante III', solo: 39.05, duo: 54.66 },
   { value: 'diamante2', label: 'Diamante II', solo: 41.00, duo: 57.40 },
   { value: 'diamante1', label: 'Diamante I', solo: 43.05, duo: 60.26 },
+  // Novos elos por vitória
+  { value: 'mestre', label: 'Mestre', perWin: 29.75 },
+  { value: 'graomestre', label: 'Grão-Mestre', perWin: 42.50 },
+  { value: 'challenger', label: 'Challenger', perWin: 59.50 },
 ]
 
 export default function PriceCalculatorNew() {
@@ -58,15 +65,17 @@ export default function PriceCalculatorNew() {
   const [validatingCode, setValidatingCode] = useState(false)
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState(null)
+  const [selectedExtras, setSelectedExtras] = useState([])
+  const [winsCount, setWinsCount] = useState(3) // Para elos Mestre+
   const router = useRouter()
   const { toast } = useToast()
 
   useEffect(() => {
-    loadBoosters()
     const storedUser = localStorage.getItem('client_user')
     if (storedUser) {
       setUser(JSON.parse(storedUser))
     }
+    loadBoosters()
   }, [])
 
   const loadBoosters = async () => {
@@ -76,72 +85,85 @@ export default function PriceCalculatorNew() {
     }
   }
 
-  const calculateBasePrice = () => {
+  // Verificar se elo é por vitória
+  const isWinBasedElo = (eloValue) => {
+    return ['mestre', 'graomestre', 'challenger'].includes(eloValue)
+  }
+
+  // Calcular preço
+  const calculatePrice = () => {
     if (!currentElo || !desiredElo) return 0
-    
-    const currentIndex = eloTiers.findIndex(e => e.value === currentElo)
-    const desiredIndex = eloTiers.findIndex(e => e.value === desiredElo)
-    
-    if (currentIndex === -1 || desiredIndex === -1 || desiredIndex <= currentIndex) return 0
-    
-    let totalPrice = 0
-    for (let i = currentIndex; i < desiredIndex; i++) {
-      totalPrice += serviceType === 'duo' ? eloTiers[i].duo : eloTiers[i].solo
+
+    const current = eloTiers.find(e => e.value === currentElo)
+    const desired = eloTiers.find(e => e.value === desiredElo)
+
+    if (!current || !desired) return 0
+
+    let basePrice = 0
+
+    // Se desejado é elo por vitória
+    if (isWinBasedElo(desiredElo)) {
+      basePrice = (desired.perWin || 0) * winsCount
+    } else {
+      // Cálculo normal por índice
+      const currentIndex = eloTiers.indexOf(current)
+      const desiredIndex = eloTiers.indexOf(desired)
+
+      if (desiredIndex <= currentIndex) return 0
+
+      for (let i = currentIndex; i < desiredIndex; i++) {
+        const elo = eloTiers[i]
+        if (serviceType === 'solo') {
+          basePrice += elo.solo || 0
+        } else {
+          basePrice += elo.duo || 0
+        }
+      }
     }
-    
-    return totalPrice
+
+    // Aplicar bônus do booster selecionado
+    if (selectedBooster && selectedBooster.price_modifier) {
+      basePrice *= (1 + selectedBooster.price_modifier / 100)
+    }
+
+    return basePrice
   }
 
-  const calculatePriceWithBooster = () => {
-    const basePrice = calculateBasePrice()
-    if (!selectedBooster) return basePrice
-    
-    // Todos os boosters tem +10% fixo
-    const modifier = 1.10
-    
-    return basePrice * modifier
-  }
-
-  const getDiscountPercentage = () => {
-    let discount = 0
-    
-    // Desconto primeira compra
-    if (user && !user.firstPurchaseDiscountUsed) {
-      discount = 10
-    }
-    
-    // Código de desconto (sobrescreve se for maior)
-    if (validatedDiscount) {
-      discount = Math.max(discount, validatedDiscount.discountPercentage)
-    }
-    
-    return discount
-  }
-
+  // Calcular preço com extras
   const calculateFinalPrice = () => {
-    const priceWithBooster = calculatePriceWithBooster()
-    const discountPercentage = getDiscountPercentage()
-    
-    if (discountPercentage === 0) return priceWithBooster
-    
-    return priceWithBooster * (1 - discountPercentage / 100)
-  }
+    let price = calculatePrice()
 
-  const originalPrice = calculatePriceWithBooster()
-  const discountPercentage = getDiscountPercentage()
-  const finalPrice = calculateFinalPrice()
+    // Aplicar extras
+    const extrasPercentage = EXTRA_SERVICES
+      .filter(s => selectedExtras.includes(s.id))
+      .reduce((sum, s) => sum + s.percentage, 0)
+
+    price *= (1 + extrasPercentage / 100)
+
+    // Aplicar desconto de código
+    if (validatedDiscount) {
+      price *= (1 - validatedDiscount.percentage / 100)
+    }
+
+    // Aplicar desconto de primeira compra
+    if (user && !user.firstPurchaseDiscountUsed && !validatedDiscount) {
+      price *= 0.9 // 10% off
+    }
+
+    return price
+  }
 
   const handleValidateCode = async () => {
     if (!discountCode.trim()) return
-    
+
     setValidatingCode(true)
     const result = await validateDiscountCode(discountCode)
-    
+
     if (result.success) {
       setValidatedDiscount(result.data)
       toast({
         title: 'Código válido!',
-        description: `${result.data.discountPercentage}% de desconto aplicado`,
+        description: `Desconto de ${result.data.percentage}% aplicado.`,
       })
     } else {
       toast({
@@ -149,86 +171,75 @@ export default function PriceCalculatorNew() {
         description: result.error,
         variant: 'destructive',
       })
-      setValidatedDiscount(null)
     }
-    
+
     setValidatingCode(false)
   }
 
   const handleSubmit = async () => {
-    // Validações
-    if (!currentElo || !desiredElo) {
-      toast({
-        title: 'Campos obrigatórios',
-        description: 'Selecione o elo atual e desejado',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    if (!selectedBooster) {
-      toast({
-        title: 'Selecione um booster',
-        description: 'Escolha o booster que fará seu serviço',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    // Se não estiver logado, redireciona para registro
     if (!user) {
       toast({
-        title: 'Faça login',
-        description: 'Você precisa ter uma conta para fazer pedidos',
+        title: 'Login necessário',
+        description: 'Faça login para fazer um pedido.',
+        variant: 'destructive',
       })
-      router.push('/client-register')
+      return
+    }
+
+    if (!currentElo || !desiredElo) {
+      toast({
+        title: 'Selecione os elos',
+        description: 'Escolha seu elo atual e desejado.',
+        variant: 'destructive',
+      })
       return
     }
 
     setLoading(true)
 
-    // Criar pedido
+    const basePrice = calculatePrice()
+    const finalPrice = calculateFinalPrice()
+
     const orderData = {
       clientId: user.id,
       clientName: user.name,
-      clientContact: user.phone,
-      currentRank: eloTiers.find(e => e.value === currentElo)?.label,
-      desiredRank: eloTiers.find(e => e.value === desiredElo)?.label,
+      clientContact: user.phone || user.discord,
+      currentRank: eloTiers.find(e => e.value === currentElo)?.label || currentElo,
+      desiredRank: isWinBasedElo(desiredElo) 
+        ? `${eloTiers.find(e => e.value === desiredElo)?.label} (${winsCount} vitórias)`
+        : eloTiers.find(e => e.value === desiredElo)?.label,
       serviceType,
-      originalPrice: originalPrice.toFixed(2),
-      discountCode: validatedDiscount?.code || null,
-      discountPercentage: discountPercentage,
-      price: originalPrice.toFixed(2),
+      originalPrice: basePrice.toFixed(2),
+      price: basePrice.toFixed(2),
       finalPrice: finalPrice.toFixed(2),
-      boosterId: selectedBooster.id,
-      boosterName: selectedBooster.name,
+      discountCode: validatedDiscount?.code || null,
+      discountPercentage: validatedDiscount?.percentage || 0,
+      boosterId: selectedBooster?.id || null,
+      boosterName: selectedBooster?.name || null,
     }
 
     const result = await createOrder(orderData)
 
     if (result.success) {
-      // Marcar primeira compra como usada
-      if (user && !user.firstPurchaseDiscountUsed && discountPercentage === 10) {
-        await markFirstPurchaseDiscountUsed(user.id)
-        const updatedUser = { ...user, firstPurchaseDiscountUsed: true }
-        localStorage.setItem('client_user', JSON.stringify(updatedUser))
-      }
-      
       // Incrementar uso do código
       if (validatedDiscount) {
         await incrementDiscountCodeUsage(validatedDiscount.code)
       }
 
+      // Marcar desconto de primeira compra como usado
+      if (user && !user.firstPurchaseDiscountUsed && !validatedDiscount) {
+        await markFirstPurchaseDiscountUsed(user.id)
+      }
+
       toast({
         title: 'Pedido criado!',
-        description: 'Redirecionando para pagamento...',
+        description: 'Você será redirecionado para o pagamento.',
       })
-      
-      // Redirecionar para pagamento
+
       router.push(`/payment/${result.data.id}`)
     } else {
       toast({
-        title: 'Erro',
+        title: 'Erro ao criar pedido',
         description: result.error,
         variant: 'destructive',
       })
@@ -237,10 +248,13 @@ export default function PriceCalculatorNew() {
     setLoading(false)
   }
 
+  const price = calculatePrice()
+  const finalPrice = calculateFinalPrice()
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Calculadora Principal */}
-      <div className="lg:col-span-2">
+      <div className="lg:col-span-2 space-y-6">
         <Card className="glass-card border-primary-500/20">
           <CardHeader>
             <CardTitle className="text-2xl flex items-center gap-2">
@@ -288,209 +302,199 @@ export default function PriceCalculatorNew() {
               </Card>
             )}
 
-            {/* Elo Atual - COM IMAGENS */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Elo Atual</label>
-              <EloSelect 
-                value={currentElo}
-                onValueChange={setCurrentElo}
-                placeholder="Selecione seu elo atual"
-                eloTiers={eloTiers}
-              />
-            </div>
-
-            {/* Elo Desejado - COM IMAGENS */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Elo Desejado</label>
-              <EloSelect 
-                value={desiredElo}
-                onValueChange={setDesiredElo}
-                placeholder="Selecione seu elo desejado"
-                eloTiers={eloTiers}
-              />
-            </div>
-
-        {/* Tipo de Serviço */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Tipo de Serviço</label>
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={() => setServiceType('solo')}
-              className={`p-4 rounded-lg border-2 transition-all ${
-                serviceType === 'solo'
-                  ? 'border-primary-500 bg-primary-500/10'
-                  : 'border-gray-200 dark:border-gray-700'
-              }`}
-            >
-              <Zap className="h-6 w-6 mx-auto mb-2 text-primary-500" />
-              <p className="font-bold">Solo Boost</p>
-              <p className="text-xs text-muted-foreground">Preço padrão</p>
-            </button>
-            <button
-              onClick={() => setServiceType('duo')}
-              className={`p-4 rounded-lg border-2 transition-all ${
-                serviceType === 'duo'
-                  ? 'border-orange-500 bg-orange-500/10'
-                  : 'border-gray-200 dark:border-gray-700'
-              }`}
-            >
-              <TrendingUp className="h-6 w-6 mx-auto mb-2 text-orange-500" />
-              <p className="font-bold">Duo Boost</p>
-              <p className="text-xs text-muted-foreground">+30% no preço</p>
-            </button>
-          </div>
-        </div>
-
-        {/* Seleção de Booster */}
-        <div className="space-y-3">
-          <label className="text-sm font-medium flex items-center gap-2">
-            <Star className="h-4 w-4 text-orange-500" />
-            Escolha seu Booster
-          </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto">
-            {boosters.map((booster) => (
-              <button
-                key={booster.id}
-                onClick={() => setSelectedBooster(booster)}
-                className={`p-3 rounded-lg border-2 transition-all text-left ${
-                  selectedBooster?.id === booster.id
-                    ? 'border-orange-500 bg-orange-500/10'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-orange-500/50'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <p className="font-bold">{booster.name}</p>
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: booster.rating }).map((_, i) => (
-                      <Star key={i} className="h-3 w-3 fill-orange-500 text-orange-500" />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground">{booster.rank}</p>
-                {booster.price_modifier !== 1 && (
-                  <Badge variant="outline" className="mt-2 text-xs">
-                    {booster.price_modifier > 1 ? '+' : ''}{((booster.price_modifier - 1) * 100).toFixed(0)}% no preço
-                  </Badge>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Código de Desconto */}
-        <div className="space-y-2 border-t pt-4">
-          <Label className="flex items-center gap-2">
-            <Gift className="h-4 w-4 text-orange-500" />
-            Código de Desconto (Opcional)
-          </Label>
-          <div className="flex gap-2">
-            <Input
-              placeholder="Digite o código (ex: DISCORD15)"
-              value={discountCode}
-              onChange={(e) => {
-                setDiscountCode(e.target.value.toUpperCase())
-                setValidatedDiscount(null)
-              }}
-              className="bg-white/50 dark:bg-black/50 uppercase"
+            {/* Elo Atual - VISUAL */}
+            <EloVisualSelector
+              label="Elo Atual"
+              selectedElo={currentElo}
+              onEloChange={setCurrentElo}
+              eloTiers={eloTiers}
             />
-            <Button
-              onClick={handleValidateCode}
-              disabled={!discountCode.trim() || validatingCode}
-              variant="outline"
-            >
-              {validatingCode ? 'Validando...' : 'Aplicar'}
-            </Button>
-          </div>
-          {validatedDiscount && (
-            <p className="text-sm text-green-500">
-              ✅ Código válido! {validatedDiscount.discountPercentage}% de desconto
-            </p>
-          )}
-        </div>
 
-        {/* Resumo de Preço */}
-        {originalPrice > 0 && selectedBooster && (
-          <div className="bg-gradient-to-r from-primary-500/10 to-orange-500/10 border border-primary-500/20 rounded-lg p-6 animate-slide-in">
-            <div className="space-y-3">
-              {discountPercentage > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Preço original:</span>
-                  <span className="line-through">R$ {originalPrice.toFixed(2)}</span>
+            {/* Elo Desejado - VISUAL */}
+            <EloVisualSelector
+              label="Elo Desejado"
+              selectedElo={desiredElo}
+              onEloChange={setDesiredElo}
+              eloTiers={eloTiers}
+            />
+
+            {/* Seletor de Vitórias (para Mestre+) */}
+            {desiredElo && isWinBasedElo(desiredElo) && (
+              <Card className="p-4 glass-card">
+                <Label className="mb-3 block text-center">Quantidade de Vitórias</Label>
+                <div className="flex items-center justify-center gap-4">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setWinsCount(Math.max(1, winsCount - 1))}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <div className="text-3xl font-bold text-primary-500 w-16 text-center">
+                    {winsCount}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setWinsCount(Math.min(20, winsCount + 1))}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
                 </div>
-              )}
-              
-              {discountPercentage > 0 && (
-                <div className="flex justify-between text-sm text-green-500 font-semibold">
-                  <span>Desconto ({discountPercentage}%):</span>
-                  <span>- R$ {(originalPrice - finalPrice).toFixed(2)}</span>
-                </div>
-              )}
-              
-              <div className="flex items-center justify-between border-t pt-3">
-                <span className="text-lg font-semibold">Preço Final:</span>
-                <div className="text-right">
-                  <p className="text-4xl font-bold gamer-gradient bg-clip-text text-transparent">
-                    R$ {finalPrice.toFixed(2)}
-                  </p>
-                  {discountPercentage > 0 && (
-                    <Badge className="mt-2 bg-green-500">
-                      <Gift className="h-3 w-3 mr-1" />
-                      Você economizou R$ {(originalPrice - finalPrice).toFixed(2)}!
-                    </Badge>
-                  )}
+              </Card>
+            )}
+
+            {/* Tipo de Serviço */}
+            {desiredElo && !isWinBasedElo(desiredElo) && (
+              <div className="space-y-2">
+                <Label>Tipo de Serviço</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    variant={serviceType === 'solo' ? 'default' : 'outline'}
+                    onClick={() => setServiceType('solo')}
+                    className="w-full"
+                  >
+                    <Zap className="h-4 w-4 mr-2" />
+                    Solo
+                  </Button>
+                  <Button
+                    variant={serviceType === 'duo' ? 'default' : 'outline'}
+                    onClick={() => setServiceType('duo')}
+                    className="w-full"
+                  >
+                    <Star className="h-4 w-4 mr-2" />
+                    Duo
+                  </Button>
                 </div>
               </div>
+            )}
+
+            {/* Seleção de Booster */}
+            {boosters.length > 0 && (
+              <div className="space-y-2">
+                <Label>Escolha seu Booster (Opcional)</Label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {boosters.map(booster => (
+                    <Button
+                      key={booster.id}
+                      variant={selectedBooster?.id === booster.id ? 'default' : 'outline'}
+                      onClick={() => setSelectedBooster(booster)}
+                      className="flex flex-col h-auto py-3"
+                    >
+                      <span className="font-bold">{booster.name}</span>
+                      <Badge variant="secondary" className="mt-1">
+                        +{booster.price_modifier}%
+                      </Badge>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Código de Desconto */}
+            <div className="space-y-2">
+              <Label>Código de Desconto (Opcional)</Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Digite o código"
+                  value={discountCode}
+                  onChange={(e) => setDiscountCode(e.target.value)}
+                  disabled={!!validatedDiscount}
+                />
+                <Button
+                  onClick={handleValidateCode}
+                  disabled={validatingCode || !!validatedDiscount}
+                >
+                  {validatedDiscount ? 'Aplicado' : 'Validar'}
+                </Button>
+              </div>
+              {validatedDiscount && (
+                <p className="text-sm text-green-500">
+                  ✓ Desconto de {validatedDiscount.percentage}% aplicado
+                </p>
+              )}
             </div>
-            
-            <div className="flex items-center justify-center gap-2 mt-4">
-              <Badge variant="outline">
-                {serviceType === 'duo' ? 'Duo Boost' : 'Solo Boost'}
-              </Badge>
-              <Badge variant="outline">
-                Booster: {selectedBooster.name}
-              </Badge>
-            </div>
-            
-            <p className="text-xs text-center text-muted-foreground mt-3">
-              ✅ Entrega em até 7 dias | 💬 Chat direto com o booster
-            </p>
-          </div>
-        )}
 
-        {/* Botão */}
-        <Button
-          className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold text-lg h-12"
-          disabled={originalPrice === 0 || !selectedBooster || loading || !user}
-          onClick={handleSubmit}
-        >
-          {loading ? 'Processando...' : user ? 'Fazer Pedido' : 'Faça Login para Continuar'}
-        </Button>
+            {/* Resumo do Preço */}
+            {price > 0 && (
+              <Card className="bg-gradient-to-r from-primary-500/10 to-purple-500/10 border-primary-500/20">
+                <CardContent className="p-6 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Preço Base:</span>
+                    <span className="font-semibold">R$ {price.toFixed(2)}</span>
+                  </div>
+                  
+                  {selectedExtras.length > 0 && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Serviços Extras:</span>
+                      <span className="text-purple-500">
+                        +{EXTRA_SERVICES
+                          .filter(s => selectedExtras.includes(s.id))
+                          .reduce((sum, s) => sum + s.percentage, 0)}%
+                      </span>
+                    </div>
+                  )}
 
-        {!user && (
-          <p className="text-center text-sm text-muted-foreground">
-            Não tem conta?{' '}
-            <Link href="/client-register" className="text-primary-500 hover:underline font-semibold">
-              Criar conta grátis
-            </Link>
-          </p>
-        )}
-      </CardContent>
-    </Card>
-    </div>
+                  {(validatedDiscount || (user && !user.firstPurchaseDiscountUsed)) && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Desconto:</span>
+                      <span className="text-green-500">
+                        -{validatedDiscount?.percentage || 10}%
+                      </span>
+                    </div>
+                  )}
 
-    {/* Painel Info do Booster - LADO DIREITO */}
-    <div className="lg:col-span-1">
-      {selectedBooster ? (
-        <BoosterInfoPanel booster={selectedBooster} />
-      ) : (
-        <Card className="glass-card border-primary-500/20">
-          <CardContent className="py-12 text-center text-muted-foreground">
-            <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p className="text-sm">Selecione um booster para ver suas informações</p>
+                  <div className="border-t pt-3 flex justify-between items-center">
+                    <span className="text-lg font-bold">Total do Pedido:</span>
+                    <span className="text-3xl font-bold text-primary-500">
+                      R$ {finalPrice.toFixed(2)}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Botão de Fazer Pedido */}
+            <Button
+              onClick={handleSubmit}
+              disabled={loading || !currentElo || !desiredElo || !user}
+              className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold text-lg h-12"
+            >
+              {loading ? 'Processando...' : 'Fazer Pedido'}
+            </Button>
+
+            {!user && (
+              <p className="text-center text-sm text-muted-foreground">
+                Não tem conta?{' '}
+                <Link href="/client-register" className="text-primary-500 hover:underline font-semibold">
+                  Criar conta grátis
+                </Link>
+              </p>
+            )}
           </CardContent>
         </Card>
-      )}
+      </div>
+
+      {/* Painel Lateral */}
+      <div className="space-y-6">
+        {/* Painel Info do Booster */}
+        {selectedBooster ? (
+          <BoosterInfoPanel booster={selectedBooster} />
+        ) : (
+          <Card className="glass-card border-primary-500/20">
+            <CardContent className="py-12 text-center text-muted-foreground">
+              <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-sm">Selecione um booster para ver suas informações</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Serviços Extras */}
+        <ExtraServicesCard
+          selectedServices={selectedExtras}
+          onServicesChange={setSelectedExtras}
+        />
+      </div>
     </div>
-  </div>
   )
 }

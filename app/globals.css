@@ -163,6 +163,41 @@
 
 a, button, [role="button"], input[type="submit"], input[type="button"] {
   cursor: url('/cursors/person.cur'), pointer !important;
+
+/* Animações para seletor de elos */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.4s ease-out;
+}
+
+/* Glow effect para imagens de elo */
+.drop-shadow-glow {
+  filter: drop-shadow(0 0 20px rgba(255, 94, 77, 0.4));
+}
+
 }
 
 input[type="text"], input[type="email"], input[type="password"], input[type="number"], textarea, select {
