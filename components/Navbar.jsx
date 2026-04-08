@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import NotificationBell from '@/components/NotificationBell'
+import UserInbox from '@/components/UserInbox'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -120,7 +120,7 @@ export default function Navbar() {
             )
           ))}
           
-          <NotificationBell />
+          <UserInbox />
           
           <Button
             variant="ghost"

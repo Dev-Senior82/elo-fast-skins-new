@@ -117,7 +117,29 @@ export async function getBoosterNotifications(boosterId) {
   }
 }
 
-// NOVO: Deletar notificação
+// ============================================
+// FUNÇÕES ANTIGAS DE NOTIFICAÇÕES (DEPRECATED)
+// Mantidas apenas para compatibilidade
+// Use o novo sistema UserInbox ao invés destas
+// ============================================
+
+/* DEPRECATED - NÃO USAR
+export async function getBoosterNotifications(boosterId) {
+  try {
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .or(`user_id.eq.${boosterId},booster_id.eq.${boosterId}`)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return { success: true, data: data || [] }
+  } catch (error) {
+    console.error('Error fetching notifications:', error)
+    return { success: false, error: error.message }
+  }
+}
+
 export async function deleteNotification(notificationId) {
   try {
     const { error } = await supabase
@@ -133,7 +155,6 @@ export async function deleteNotification(notificationId) {
   }
 }
 
-// Marcar notificação como lida
 export async function markNotificationAsRead(notificationId) {
   try {
     const { error } = await supabase
@@ -148,6 +169,8 @@ export async function markNotificationAsRead(notificationId) {
     return { success: false, error: error.message }
   }
 }
+*/
+
 
 // Upload de comprovante de pagamento
 export async function uploadPaymentProof(orderId, proofUrl) {
