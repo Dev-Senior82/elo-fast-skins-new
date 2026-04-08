@@ -10,16 +10,36 @@ export default function AdminTheme() {
       const boosterUser = localStorage.getItem('booster_user')
       if (boosterUser) {
         const user = JSON.parse(boosterUser)
-        setIsAdmin(user.is_admin === true)
+        // Verificar is_admin OU isAdmin OU login === 'admin'
+        const adminCheck = user.is_admin === true || 
+                          user.isAdmin === true || 
+                          user.login === 'admin' ||
+                          user.login === 'Admin' ||
+                          user.login === 'ADMIN'
+        setIsAdmin(adminCheck)
+        
+        // Aplicar classe no body
+        if (adminCheck) {
+          document.body.classList.add('admin-theme')
+        } else {
+          document.body.classList.remove('admin-theme')
+        }
       } else {
         setIsAdmin(false)
+        document.body.classList.remove('admin-theme')
       }
     }
 
     checkAdmin()
-    window.addEventListener('auth-change', checkAdmin)
     
-    return () => window.removeEventListener('auth-change', checkAdmin)
+    // Escutar mudanças de autenticação
+    const interval = setInterval(checkAdmin, 1000)
+    
+    return () => {
+      clearInterval(interval)
+      document.body.classList.remove('admin-theme')
+    }
+  }, [])
   }, [])
 
   if (!isAdmin) return null
@@ -178,8 +198,15 @@ export function useAdminTheme() {
       const boosterUser = localStorage.getItem('booster_user')
       if (boosterUser) {
         const user = JSON.parse(boosterUser)
-        if (user.is_admin) {
+        const adminCheck = user.is_admin === true || 
+                          user.isAdmin === true || 
+                          user.login === 'admin' ||
+                          user.login === 'Admin' ||
+                          user.login === 'ADMIN'
+                          
+        if (adminCheck) {
           document.body.classList.add('admin-theme')
+          console.log('✅ Admin theme activated!')
         } else {
           document.body.classList.remove('admin-theme')
         }
@@ -189,10 +216,10 @@ export function useAdminTheme() {
     }
 
     checkAdmin()
-    window.addEventListener('auth-change', checkAdmin)
+    const interval = setInterval(checkAdmin, 1000)
     
     return () => {
-      window.removeEventListener('auth-change', checkAdmin)
+      clearInterval(interval)
       document.body.classList.remove('admin-theme')
     }
   }, [])

@@ -83,34 +83,53 @@ export default function ClientProfilePage() {
       return
     }
 
+    // Validar tipo
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Arquivo inválido',
+        description: 'Apenas imagens são permitidas',
+        variant: 'destructive'
+      })
+      return
+    }
+
     setUploading(true)
 
     try {
       const fileExt = file.name.split('.').pop()
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`
+      const fileName = `client-${user.id}-${Date.now()}.${fileExt}`
       const filePath = `avatars/${fileName}`
 
-      const { error: uploadError } = await supabase.storage
+      // Upload usando anon key (funciona sem autenticação)
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('profiles')
-        .upload(filePath, file)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        })
 
-      if (uploadError) throw uploadError
+      if (uploadError) {
+        console.error('Upload error:', uploadError)
+        throw new Error(uploadError.message)
+      }
 
-      const { data } = supabase.storage
+      // Obter URL pública
+      const { data: urlData } = supabase.storage
         .from('profiles')
         .getPublicUrl(filePath)
 
-      setProfile({ ...profile, avatar_url: data.publicUrl })
+      setProfile({ ...profile, avatar_url: urlData.publicUrl })
 
       toast({
         title: 'Foto enviada!',
-        description: 'Não esqueça de salvar o perfil'
+        description: 'Não esqueça de salvar o perfil',
+        duration: 3000
       })
     } catch (error) {
       console.error('Erro no upload:', error)
       toast({
         title: 'Erro ao enviar foto',
-        description: 'Tente novamente',
+        description: error.message || 'Tente novamente',
         variant: 'destructive'
       })
     } finally {
