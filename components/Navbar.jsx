@@ -161,6 +161,12 @@ export default function Navbar() {
                     Dashboard
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/client-profile" className="cursor-pointer">
+                    <User className="h-4 w-4 mr-2" />
+                    Meu Perfil
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleClientLogout} className="text-red-600 cursor-pointer">
                   <LogOut className="h-4 w-4 mr-2" />
@@ -202,6 +208,12 @@ export default function Navbar() {
                   <Link href={boosterUser.is_admin ? "/admin-dashboard" : "/booster-dashboard"} className="cursor-pointer">
                     <Shield className="h-4 w-4 mr-2" />
                     {boosterUser.is_admin ? "Admin" : "Dashboard"}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/booster-profile" className="cursor-pointer">
+                    <User className="h-4 w-4 mr-2" />
+                    Meu Perfil
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

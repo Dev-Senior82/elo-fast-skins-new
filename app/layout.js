@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import WhatsAppButton from '@/components/WhatsAppButton'
 import { Toaster } from '@/components/ui/toaster'
+import AdminTheme from '@/components/AdminTheme'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -25,6 +26,7 @@ export default function RootLayout({ children }) {
           disableTransitionOnChange
         >
           <div className="min-h-screen flex flex-col">
+            <AdminTheme />
             <Navbar />
             <main className="flex-1">{children}</main>
             <Footer />
