@@ -1,16 +1,28 @@
 import Link from 'next/link'
-import Image from 'next/image'
-import { Sparkles, Shield, Zap, TrendingUp, Users, Clock } from 'lucide-react'
+import dynamic from 'next/dynamic'
+import { Suspense } from 'react'
+import { Sparkles, Shield, Zap, TrendingUp, Users, Clock, Star, Lock, Headphones, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import TestimonialCarousel from '@/components/TestimonialCarousel'
-import TestimonialForm from '@/components/TestimonialForm'
 import { getApprovedTestimonials } from './actions/testimonials'
 import AnnouncementBanner from '@/components/AnnouncementBanner'
 import FakeActivityBanner from '@/components/FakeActivityBanner'
-import EloBoostPage from '@/components/EloBoostPage'
 
-export const dynamic = 'force-dynamic'
+// Lazy load componentes pesados
+const TestimonialCarousel = dynamic(() => import('@/components/TestimonialCarousel'), {
+  loading: () => <div className="h-64 bg-gray-800/50 animate-pulse rounded-xl" />
+})
+const TestimonialForm = dynamic(() => import('@/components/TestimonialForm'), {
+  loading: () => <div className="h-48 bg-gray-800/50 animate-pulse rounded-xl" />
+})
+const EloBoostPage = dynamic(() => import('@/components/EloBoostPage'), {
+  loading: () => <div className="h-96 bg-gray-800/50 animate-pulse rounded-xl" />
+})
+
+// Gerar número fixo de boosters online (evita re-render)
+const boostersOnline = 7
+
+export const revalidate = 60 // Cache por 60 segundos
 
 export default async function HomePage() {
   const testimonialsResult = await getApprovedTestimonials()
@@ -22,91 +34,144 @@ export default async function HomePage() {
       <AnnouncementBanner />
       <FakeActivityBanner />
       
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 gamer-gradient opacity-10" />
-        <div className="container relative py-20 md:py-32">
+      {/* Hero Section - Estilo EloDash com imagem de fundo */}
+      <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+        {/* Imagem de fundo do Pantheon */}
+        <div 
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: 'url(https://customer-assets.emergentagent.com/job_dashboard-150/artifacts/c2e92wvp_image.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        />
+        {/* Overlay escuro para legibilidade */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/40 z-10" />
+        
+        <div className="container relative z-20 py-20 md:py-32">
           <div className="flex flex-col md:flex-row items-center gap-12">
             <div className="flex-1 text-center md:text-left space-y-6">
-              <div className="inline-block">
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 text-sm font-medium">
-                  <Sparkles className="h-4 w-4" />
-                  #1 em Elo Job no Brasil
+              {/* Contador de Boosters Online */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/20 border border-green-500/30">
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-green-400 font-semibold text-sm">
+                  {boostersOnline} BOOSTERS ONLINE
                 </span>
               </div>
               
-              <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-                Alcance o Elo dos{' '}
+              <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight">
+                <span className="text-white">ALCANCE O TOPO</span>
+                <br />
                 <span className="gamer-gradient bg-clip-text text-transparent">
-                  Seus Sonhos
+                  QUE VOCÊ MERECE.
                 </span>
               </h1>
               
-              <p className="text-lg text-muted-foreground max-w-xl">
-                Boosters profissionais, segurança garantida e suporte 24/7. 
-                Transforme seu jogo com os melhores do Brasil!
+              <p className="text-lg text-gray-300 max-w-xl">
+                Plataforma premium para quem quer resultado com controle.
+                <br />
+                Boosters high elo verificados, privacidade e suporte de verdade.
               </p>
               
-              {/* NOVO: Contador de Boosters Online */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/20">
-                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-green-600 dark:text-green-400 font-semibold">
-                  {Math.floor(Math.random() * (7 - 3 + 1)) + 3} Boosters Online
-                </span>
+              {/* Stats estilo EloDash */}
+              <div className="flex flex-wrap items-center gap-6 pt-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-3xl font-bold text-orange-500">4.9</span>
+                  <div className="flex items-center">
+                    {[1,2,3,4,5].map((i) => (
+                      <Star key={i} className={`h-4 w-4 ${i <= 4 ? 'fill-orange-500 text-orange-500' : 'fill-orange-500/50 text-orange-500/50'}`} />
+                    ))}
+                  </div>
+                  <span className="text-gray-400 text-sm">AVALIAÇÃO</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex -space-x-2">
+                    {['🎮', '⚔️', '🏆', '🔥'].map((emoji, i) => (
+                      <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-sm border-2 border-black">
+                        {emoji}
+                      </div>
+                    ))}
+                  </div>
+                  <span className="text-white font-bold">+2K</span>
+                  <span className="text-gray-400 text-sm">CLIENTES</span>
+                </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-4">
                 <Button
                   asChild
                   size="lg"
-                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold text-lg"
+                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold text-lg px-8 py-6 rounded-xl shadow-lg shadow-orange-500/30"
                 >
-                  <Link href="/precos">Contratar Agora</Link>
+                  <a href="#calculadora">
+                    COMEÇAR AGORA
+                    <Zap className="ml-2 h-5 w-5" />
+                  </a>
                 </Button>
                 <Button
                   asChild
                   size="lg"
                   variant="outline"
-                  className="border-primary-500/50 hover:bg-primary-500/10"
+                  className="border-white/30 text-white hover:bg-white/10 font-semibold text-lg px-8 py-6 rounded-xl"
                 >
-                  <Link href="/boosters">Conheça os Boosters</Link>
+                  <Link href="/boosters">
+                    COMO FUNCIONA
+                    <TrendingUp className="ml-2 h-5 w-5" />
+                  </Link>
                 </Button>
               </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-4 pt-8">
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-primary-500">983+</p>
-                  <p className="text-sm text-muted-foreground">Clientes</p>
+              {/* Badges de Garantia */}
+              <div className="flex flex-wrap items-center gap-6 pt-8 text-gray-400 text-sm">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-green-500" />
+                  <span>CONTA PROTEGIDA</span>
                 </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-orange-500">6 dias</p>
-                  <p className="text-sm text-muted-foreground">Entrega</p>
+                <div className="flex items-center gap-2">
+                  <Lock className="h-4 w-4 text-blue-500" />
+                  <span>PRIVACIDADE</span>
                 </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-green-500">24/7</p>
-                  <p className="text-sm text-muted-foreground">Suporte</p>
+                <div className="flex items-center gap-2">
+                  <Headphones className="h-4 w-4 text-purple-500" />
+                  <span>SUPORTE ATIVO</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Truck className="h-4 w-4 text-orange-500" />
+                  <span>ENTREGA RÁPIDA</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex-1 flex justify-center items-center">
-              <div className="relative">
-                <img
-                  src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/s1dqr3eg_elofast.png"
-                  alt="EloFast Mascote"
-                  className="w-full max-w-3xl drop-shadow-2xl animate-float"
-                  style={{
-                    filter: 'drop-shadow(0 0 50px rgba(255, 94, 77, 0.6))'
-                  }}
-                />
-              </div>
+            {/* Card lateral - PDF Ebook */}
+            <div className="hidden lg:block flex-shrink-0 w-80">
+              <Card className="glass-card border-orange-500/30 bg-black/50 backdrop-blur-xl">
+                <CardContent className="p-6 space-y-4">
+                  <div className="flex items-center gap-2 text-orange-400 text-sm font-semibold">
+                    <Sparkles className="h-4 w-4" />
+                    MATERIAL GRATUITO!
+                  </div>
+                  <h3 className="text-xl font-bold text-white">PDF MID LANER - SLAYVIER1</h3>
+                  <p className="text-gray-400 text-sm">
+                    Ebook <span className="text-orange-400 font-semibold">Challenger em 3 Passos</span> - Domine a mid lane e suba de elo!
+                  </p>
+                  <a 
+                    href="https://customer-assets.emergentagent.com/job_dashboard-150/artifacts/5loo4vqd_Ebook%20Challenger%20em%203%20passos%20-%20MidLanner%20%281%29%20%281%29.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold rounded-lg transition-all"
+                  >
+                    BAIXAR GRÁTIS
+                    <span>→</span>
+                  </a>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Calculadora de Boost - NOVA POSIÇÃO */}
+      {/* Calculadora de Boost */}
       <section className="container py-12" id="calculadora">
         <div className="text-center mb-8">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
