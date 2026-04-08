@@ -84,14 +84,7 @@ export default function Navbar() {
     <nav className="sticky top-0 z-40 w-full border-b border-border/40 glass-card electric-navbar">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <Image
-            src="https://customer-assets.emergentagent.com/job_53d02550-cf1c-446a-a254-b64d519a09e0/artifacts/9wwyxxmg_image.png"
-            alt="Elo Fast Skins"
-            width={48}
-            height={48}
-            className="rounded-lg"
-          />
-          <span className="font-bold text-xl hidden sm:inline gamer-gradient bg-clip-text text-transparent">
+          <span className="font-bold text-2xl gamer-gradient bg-clip-text text-transparent">
             ELO FAST SKINS
           </span>
         </Link>

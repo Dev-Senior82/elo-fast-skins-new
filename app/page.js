@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { getApprovedTestimonials } from './actions/testimonials'
 import AnnouncementBanner from '@/components/AnnouncementBanner'
-import FakeActivityBanner from '@/components/FakeActivityBanner'
 
 // Lazy load componentes pesados
 const TestimonialCarousel = dynamic(() => import('@/components/TestimonialCarousel'), {
@@ -30,9 +29,8 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col">
-      {/* Banners no Topo */}
+      {/* Banner no Topo */}
       <AnnouncementBanner />
-      <FakeActivityBanner />
       
       {/* Hero Section - Estilo EloDash com imagem de fundo */}
       <section className="relative min-h-[90vh] flex items-center overflow-hidden">
