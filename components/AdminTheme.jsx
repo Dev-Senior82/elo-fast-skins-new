@@ -40,7 +40,6 @@ export default function AdminTheme() {
       document.body.classList.remove('admin-theme')
     }
   }, [])
-  }, [])
 
   if (!isAdmin) return null
 
