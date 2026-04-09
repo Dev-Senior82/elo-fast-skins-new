@@ -88,8 +88,32 @@ export default function PriceCalculatorNew() {
     return ['mestre', 'graomestre', 'challenger'].includes(eloValue)
   }
 
+  const getEloIndex = (eloValue) => {
+    return eloTiers.findIndex(e => e.value === eloValue)
+  }
+
+  const isValidEloSelection = () => {
+    if (!currentElo || !desiredElo) return true
+
+    const currentIsHigh = isWinBasedElo(currentElo)
+    const desiredIsHigh = isWinBasedElo(desiredElo)
+
+    // Se destino é elo alto (Mestre+), origem também deve ser elo alto
+    if (desiredIsHigh && !currentIsHigh) {
+      return false
+    }
+
+    // Se origem é elo alto, destino também deve ser (ou pode ser o mesmo para vitórias)
+    if (currentIsHigh && !desiredIsHigh) {
+      return false
+    }
+
+    return true
+  }
+
   const calculatePrice = () => {
     if (!currentElo || !desiredElo) return 0
+    if (!isValidEloSelection()) return 0
 
     const current = eloTiers.find(e => e.value === currentElo)
     const desired = eloTiers.find(e => e.value === desiredElo)
@@ -98,9 +122,11 @@ export default function PriceCalculatorNew() {
 
     let basePrice = 0
 
+    // Se o destino é elo alto (Mestre+), calcular por vitórias
     if (isWinBasedElo(desiredElo)) {
       basePrice = (desired.perWin || 0) * winsCount
     } else {
+      // Cálculo normal por divisão (até Diamante 1)
       const currentIndex = eloTiers.indexOf(current)
       const desiredIndex = eloTiers.indexOf(desired)
 
@@ -301,7 +327,17 @@ export default function PriceCalculatorNew() {
         {/* Elo Atual */}
         <div className="space-y-2">
           <Label>Elo Atual</Label>
-          <Select value={currentElo} onValueChange={setCurrentElo}>
+          <Select value={currentElo} onValueChange={(value) => {
+            setCurrentElo(value)
+            // Se selecionar um elo alto, limpar destino se for elo baixo
+            if (isWinBasedElo(value) && desiredElo && !isWinBasedElo(desiredElo)) {
+              setDesiredElo('')
+            }
+            // Se selecionar um elo baixo, limpar destino se for elo alto
+            if (!isWinBasedElo(value) && desiredElo && isWinBasedElo(desiredElo)) {
+              setDesiredElo('')
+            }
+          }}>
             <SelectTrigger className="bg-white/50 dark:bg-black/50">
               <SelectValue placeholder="Selecione seu elo atual" />
             </SelectTrigger>
@@ -323,19 +359,43 @@ export default function PriceCalculatorNew() {
               <SelectValue placeholder="Selecione seu elo desejado" />
             </SelectTrigger>
             <SelectContent className="max-h-[300px]">
-              {eloTiers.map((elo) => (
-                <SelectItem key={elo.value} value={elo.value}>
-                  {elo.label}
-                </SelectItem>
-              ))}
+              {eloTiers
+                .filter((elo) => {
+                  if (!currentElo) return true
+                  
+                  const currentIsHigh = isWinBasedElo(currentElo)
+                  const eloIsHigh = isWinBasedElo(elo.value)
+                  
+                  // Se origem é elo alto, só mostrar elos altos
+                  if (currentIsHigh) {
+                    return eloIsHigh
+                  }
+                  
+                  // Se origem é elo baixo, só mostrar elos baixos (até Diamante 1)
+                  return !eloIsHigh
+                })
+                .map((elo) => (
+                  <SelectItem key={elo.value} value={elo.value}>
+                    {elo.label}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>
 
+        {/* Aviso de elos incompatíveis */}
+        {!isValidEloSelection() && currentElo && desiredElo && (
+          <Card className="bg-red-500/10 border-red-500/20 p-3">
+            <p className="text-xs text-red-400">
+              ⚠️ Elos Mestre, Grão-Mestre e Challenger são calculados por vitórias e não podem ser combinados com elos inferiores.
+            </p>
+          </Card>
+        )}
+
         {/* Seletor de Vitórias (para Mestre+) */}
         {desiredElo && isWinBasedElo(desiredElo) && (
           <Card className="p-4 glass-card border-orange-500/20">
-            <Label className="mb-3 block text-center">Quantidade de Vitórias</Label>
+            <Label className="mb-3 block text-center">Selecione o Número de Vitórias</Label>
             <div className="flex items-center justify-center gap-4">
               <Button
                 variant="outline"
@@ -355,6 +415,9 @@ export default function PriceCalculatorNew() {
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
+            <p className="text-center text-sm text-muted-foreground mt-3">
+              R$ {eloTiers.find(e => e.value === desiredElo)?.perWin?.toFixed(2) || '0.00'}/vitória
+            </p>
           </Card>
         )}
 
@@ -410,13 +473,18 @@ export default function PriceCalculatorNew() {
                           onCheckedChange={() => handleExtraToggle(service.id)}
                           className="pointer-events-none"
                         />
-                        <span className="text-sm font-medium">{service.label}</span>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium">{service.label}</span>
+                          {service.id === 'stream' && service.percentage === 0 && (
+                            <span className="text-xs text-green-400">Totalmente grátis</span>
+                          )}
+                        </div>
                       </div>
                       <Badge 
                         variant={isSelected ? 'default' : 'outline'}
                         className={isSelected ? 'bg-green-500' : ''}
                       >
-                        +{service.percentage}%
+                        {service.percentage === 0 ? 'GRÁTIS' : `+${service.percentage}%`}
                       </Badge>
                     </div>
                   )

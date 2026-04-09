@@ -53,13 +53,18 @@ export default function ExtraServicesCard({ selectedServices, onServicesChange }
                   className="pointer-events-none"
                 />
                 <Icon className={`h-4 w-4 ${isSelected ? 'text-primary-500' : 'text-muted-foreground'}`} />
-                <span className="text-sm font-medium">{service.label}</span>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">{service.label}</span>
+                  {service.id === 'stream' && service.percentage === 0 && (
+                    <span className="text-xs text-green-400">Totalmente grátis</span>
+                  )}
+                </div>
               </div>
               <Badge 
                 variant={isSelected ? 'default' : 'outline'}
                 className={isSelected ? 'bg-green-500' : ''}
               >
-                +{service.percentage}%
+                {service.percentage === 0 ? 'GRÁTIS' : `+${service.percentage}%`}
               </Badge>
             </div>
           )

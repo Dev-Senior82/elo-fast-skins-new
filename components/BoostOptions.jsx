@@ -55,7 +55,7 @@ export default function BoostOptions({ selectedOptions, onToggleOption }) {
                 inline-block px-3 py-1 rounded-full text-xs font-bold
                 ${isSelected ? 'bg-green-500 text-white' : 'bg-slate-700 text-slate-300'}
               `}>
-                +{option.percentage}%
+                {option.percentage === 0 ? 'GRÁTIS' : `+${option.percentage}%`}
               </div>
             </button>
           )
