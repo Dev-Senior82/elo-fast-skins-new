@@ -122,8 +122,17 @@ export default function AdminDashboardPage() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="text-2xl font-bold text-primary-500">
-          R$ {parseFloat(order.price).toFixed(2)}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-2xl font-bold text-primary-500">
+              R$ {parseFloat(order.final_price || order.price).toFixed(2)}
+            </div>
+            {order.discount_code && (
+              <div className="text-xs text-green-500 mt-1">
+                Cupom: {order.discount_code} (-{order.discount_percentage}%)
+              </div>
+            )}
+          </div>
         </div>
         <div className="text-sm text-muted-foreground">
           Criado em: {new Date(order.created_at).toLocaleDateString('pt-BR')}
