@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Card } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -9,6 +9,7 @@ import { MessageCircle } from 'lucide-react'
 export default function LiveChatFake() {
   const [messages, setMessages] = useState([])
   const [typingBooster, setTypingBooster] = useState(false)
+  const hasRunRef = useRef(false)
 
   const chatMessages = [
     { sender: 'booster', text: 'Acabei de iniciar seu serviço! 🎮', delay: 1000 },
@@ -19,6 +20,10 @@ export default function LiveChatFake() {
   ]
 
   useEffect(() => {
+    // Prevenir duplicação no React Strict Mode
+    if (hasRunRef.current) return
+    hasRunRef.current = true
+
     chatMessages.forEach((msg, index) => {
       setTimeout(() => {
         if (msg.sender === 'booster') {
@@ -53,7 +58,7 @@ export default function LiveChatFake() {
         <div className="bg-gradient-to-r from-primary-500/20 to-orange-500/20 p-4 border-b border-border/40">
           <div className="flex items-center gap-3">
             <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
-            <span className="font-bold">Chat ao Vivo</span>
+            <span className="font-bold">Booster Qiyana</span>
             <Badge className="ml-auto bg-green-500/20 text-green-400 border-green-500/30 text-xs">
               Online
             </Badge>
@@ -69,11 +74,11 @@ export default function LiveChatFake() {
               <Avatar className="h-10 w-10">
                 <AvatarImage
                   src={msg.sender === 'booster'
-                    ? 'https://ddragon.leagueoflegends.com/cdn/16.7.1/img/profileicon/4645.png'
+                    ? 'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Qiyana_0.jpg'
                     : 'https://ddragon.leagueoflegends.com/cdn/16.7.1/img/profileicon/29.png'
                   }
                 />
-                <AvatarFallback>{msg.sender === 'booster' ? 'B' : 'C'}</AvatarFallback>
+                <AvatarFallback>{msg.sender === 'booster' ? 'Q' : 'C'}</AvatarFallback>
               </Avatar>
               <div
                 className={`max-w-xs p-3 rounded-lg ${
@@ -83,7 +88,7 @@ export default function LiveChatFake() {
                 }`}
               >
                 <div className="text-xs text-muted-foreground mb-1">
-                  {msg.sender === 'booster' ? 'Booster' : 'Você'}
+                  {msg.sender === 'booster' ? 'Booster Qiyana' : 'Você'}
                 </div>
                 <p className="text-sm">{msg.text}</p>
               </div>
@@ -93,8 +98,8 @@ export default function LiveChatFake() {
           {typingBooster && (
             <div className="flex gap-3 animate-in slide-in-from-bottom-2">
               <Avatar className="h-10 w-10">
-                <AvatarImage src="https://ddragon.leagueoflegends.com/cdn/16.7.1/img/profileicon/4645.png" />
-                <AvatarFallback>B</AvatarFallback>
+                <AvatarImage src="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Qiyana_0.jpg" />
+                <AvatarFallback>Q</AvatarFallback>
               </Avatar>
               <div className="max-w-xs p-3 rounded-lg bg-primary-500/20 border border-primary-500/30">
                 <div className="flex gap-1">

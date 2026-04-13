@@ -49,11 +49,11 @@ export default function LiveBoostTracking() {
 
       <div className="grid md:grid-cols-3 gap-6 mb-8">
         <Card className="p-6 text-center glass-card border-orange-500/20">
-          <div className="text-4xl font-bold text-orange-500 mb-2">2.000+</div>
+          <div className="text-4xl font-bold text-orange-500 mb-2">2.198+</div>
           <div className="text-sm text-muted-foreground">Pedidos Concluídos</div>
         </Card>
         <Card className="p-6 text-center glass-card border-primary-500/20">
-          <div className="text-4xl font-bold text-primary-500 mb-2">80+</div>
+          <div className="text-4xl font-bold text-primary-500 mb-2">24+</div>
           <div className="text-sm text-muted-foreground">Boosters Ativos</div>
         </Card>
         <Card className="p-6 text-center glass-card border-green-500/20">

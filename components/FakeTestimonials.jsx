@@ -59,6 +59,60 @@ const testimonials = [
     avatar: 'https://ddragon.leagueoflegends.com/cdn/16.7.1/img/profileicon/7120.png',
     booster: 'Jhin'
   },
+  {
+    name: 'yasumain',
+    rank: 'Platina I',
+    service: 'Elo Boost',
+    comment: 'Subiu meu elo em 3 dias, muito rápido!',
+    rating: 5,
+    avatar: 'https://ddragon.leagueoflegends.com/cdn/16.7.1/img/profileicon/4656.png',
+    booster: 'Yasuo'
+  },
+  {
+    name: 'ekkoplay',
+    rank: 'Ouro III',
+    service: 'Duo Boost',
+    comment: 'Jogador foda, aprendi muito com ele',
+    rating: 5,
+    avatar: 'https://ddragon.leagueoflegends.com/cdn/16.7.1/img/profileicon/5046.png',
+    booster: 'Ekko'
+  },
+  {
+    name: 'dravenzin',
+    rank: 'Esmeralda I',
+    service: 'Vitórias',
+    comment: 'Carrega absurdo, recomendo mt',
+    rating: 5,
+    avatar: 'https://ddragon.leagueoflegends.com/cdn/16.7.1/img/profileicon/1665.png',
+    booster: 'Draven'
+  },
+  {
+    name: 'treshgod',
+    rank: 'Diamante III',
+    service: 'Elo Boost',
+    comment: 'Suporte sensacional, ganhou todas as partidas',
+    rating: 5,
+    avatar: 'https://ddragon.leagueoflegends.com/cdn/16.7.1/img/profileicon/6959.png',
+    booster: 'Thresh'
+  },
+  {
+    name: 'vieguin',
+    rank: 'Platina III',
+    service: 'Duo Boost',
+    comment: 'Melhor booster que já contratei, top demais!',
+    rating: 5,
+    avatar: 'https://ddragon.leagueoflegends.com/cdn/16.7.1/img/profileicon/4993.png',
+    booster: 'Viego'
+  },
+  {
+    name: 'irelia1v9',
+    rank: 'Mestre',
+    service: 'Vitórias',
+    comment: 'Jogador incrível, me ajudou a chegar no mestre',
+    rating: 5,
+    avatar: 'https://ddragon.leagueoflegends.com/cdn/16.7.1/img/profileicon/5127.png',
+    booster: 'Irelia'
+  },
 ]
 
 export default function FakeTestimonials() {

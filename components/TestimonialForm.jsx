@@ -26,7 +26,7 @@ export default function TestimonialForm() {
       serviceType: formData.get('serviceType'),
       rating: rating,
       comment: formData.get('comment'),
-      avatarUrl: formData.get('avatarUrl') || null,
+      avatarUrl: null,
     }
 
     const result = await submitTestimonial(data)
@@ -79,17 +79,6 @@ export default function TestimonialForm() {
               name="serviceType"
               placeholder="Ex: Elo Boost - Gold I to Platinum IV"
               required
-              className="bg-white/50 dark:bg-black/50"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="avatarUrl">URL da Foto (opcional)</Label>
-            <Input
-              id="avatarUrl"
-              name="avatarUrl"
-              type="url"
-              placeholder="https://exemplo.com/sua-foto.jpg"
               className="bg-white/50 dark:bg-black/50"
             />
           </div>
