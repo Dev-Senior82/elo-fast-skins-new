@@ -249,3 +249,19 @@ input[type="text"], input[type="email"], input[type="password"], input[type="num
 .animate-pulse-slow {
   animation: pulse-slow 2s ease-in-out infinite;
 }
+
+/* Fix para GIF de fogo no footer - sem interação */
+footer img[src*="fire"],
+footer img[src*="flame"],
+footer .fire-gif,
+footer .flame-animation {
+  pointer-events: none !important;
+  z-index: 0 !important;
+  position: relative;
+}
+
+footer button,
+footer a {
+  position: relative;
+  z-index: 10;
+}

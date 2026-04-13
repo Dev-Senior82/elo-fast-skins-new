@@ -17,6 +17,15 @@ const TestimonialForm = dynamic(() => import('@/components/TestimonialForm'), {
 const EloBoostPage = dynamic(() => import('@/components/EloBoostPage'), {
   loading: () => <div className="h-96 bg-gray-800/50 animate-pulse rounded-xl" />
 })
+const LiveBoostTracking = dynamic(() => import('@/components/LiveBoostTracking'), {
+  loading: () => <div className="h-96 bg-gray-800/50 animate-pulse rounded-xl" />
+})
+const LiveChatFake = dynamic(() => import('@/components/LiveChatFake'), {
+  loading: () => <div className="h-96 bg-gray-800/50 animate-pulse rounded-xl" />
+})
+const FakeTestimonials = dynamic(() => import('@/components/FakeTestimonials'), {
+  loading: () => <div className="h-64 bg-gray-800/50 animate-pulse rounded-xl" />
+})
 
 // Gerar número fixo de boosters online (evita re-render)
 const boostersOnline = 7
@@ -105,6 +114,16 @@ export default async function HomePage() {
                   <a href="#calculadora">
                     COMEÇAR AGORA
                     <Zap className="ml-2 h-5 w-5" />
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="border-primary-500/50 text-primary-400 hover:bg-primary-500/10 font-semibold text-lg px-8 py-6 rounded-xl animate-pulse-slow"
+                >
+                  <a href="#tracking">
+                    🔴 ACOMPANHAR AO VIVO
                   </a>
                 </Button>
                 <Button
@@ -281,6 +300,15 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* NOVO: Boost em Tempo Real */}
+      <LiveBoostTracking />
+
+      {/* NOVO: Chat Fake */}
+      <LiveChatFake />
+
+      {/* NOVO: Feedbacks Fake */}
+      <FakeTestimonials />
 
       {/* Depoimentos */}
       <section className="container py-20">

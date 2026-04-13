@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Instagram, Mail } from 'lucide-react'
-import { SiDiscord } from 'react-icons/si'
-import { FaXTwitter } from 'react-icons/fa6'
+import { SiDiscord, SiTwitch, SiKick } from 'react-icons/si'
 
 export default function Footer() {
   return (
@@ -66,9 +65,9 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Contato */}
+          {/* Redes Sociais */}
           <div>
-            <h3 className="font-bold mb-4">Contato</h3>
+            <h3 className="font-bold mb-4">Nossas Redes</h3>
             <div className="space-y-3">
               <a
                 href="mailto:contato@elofastskins.com"
@@ -77,34 +76,32 @@ export default function Footer() {
                 <Mail className="h-4 w-4" />
                 contato@elofastskins.com
               </a>
-              <div className="flex gap-3 pt-2">
+              <div className="flex flex-wrap gap-3 pt-2">
                 <a
                   href="https://discord.gg/DMcHkNwKHb"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-9 w-9 rounded-full bg-primary-500/10 hover:bg-primary-500/20 flex items-center justify-center transition-colors"
+                  className="h-10 w-10 rounded-full bg-indigo-500/10 hover:bg-indigo-500/20 flex items-center justify-center transition-all hover:scale-110"
                   title="Discord"
                 >
-                  <SiDiscord className="h-4 w-4 text-primary-500" />
+                  <SiDiscord className="h-5 w-5 text-indigo-400" />
                 </a>
                 <a
-                  href="https://www.instagram.com/welltin.st/"
+                  href="https://www.twitch.tv/malthynho"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-9 w-9 rounded-full bg-orange-500/10 hover:bg-orange-500/20 flex items-center justify-center transition-colors"
-                  title="Instagram"
+                  className="h-10 w-10 rounded-full bg-purple-500/10 hover:bg-purple-500/20 flex items-center justify-center transition-all hover:scale-110"
+                  title="Twitch"
                 >
-                  <Instagram className="h-4 w-4 text-orange-500" />
+                  <SiTwitch className="h-5 w-5 text-purple-400" />
                 </a>
-                <a
-                  href="https://x.com/Slayvier1"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="h-9 w-9 rounded-full bg-gray-900/10 hover:bg-gray-900/20 dark:bg-white/10 dark:hover:bg-white/20 flex items-center justify-center transition-colors"
-                  title="X (Twitter)"
+                <button
+                  disabled
+                  className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center opacity-50 cursor-not-allowed"
+                  title="Kick (em breve)"
                 >
-                  <FaXTwitter className="h-4 w-4 text-gray-900 dark:text-white" />
-                </a>
+                  <SiKick className="h-5 w-5 text-green-400" />
+                </button>
               </div>
             </div>
           </div>

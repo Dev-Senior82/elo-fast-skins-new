@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Menu, X, Moon, Sun, User, LogOut, Shield } from 'lucide-react'
+import { Menu, X, Moon, Sun, User, LogOut, Shield, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTheme } from 'next-themes'
 import { useRouter } from 'next/navigation'
@@ -114,6 +114,42 @@ export default function Navbar() {
           ))}
           
           <UserInbox />
+          
+          {/* Dropdown Selecionar Jogo */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Sparkles className="h-4 w-4" />
+                Selecionar Jogo
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>Escolha seu Jogo</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/" className="flex items-center gap-2 cursor-pointer">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage 
+                      src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/judztdm9_league%20of%20legends.png" 
+                      alt="LoL" 
+                    />
+                  </Avatar>
+                  League of Legends
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/valorant" className="flex items-center gap-2 cursor-pointer">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage 
+                      src="https://customer-assets.emergentagent.com/job_league-boost-hub/artifacts/pq1wvtfz_valorant.png" 
+                      alt="Valorant" 
+                    />
+                  </Avatar>
+                  Valorant
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           
           <Button
             variant="ghost"
