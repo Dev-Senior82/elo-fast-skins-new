@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { ArrowLeft, Sparkles, Shield, Zap, Target } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import ValorantCalculatorNew from '@/components/ValorantCalculatorNew'
+import ValorantCalculatorPro from '@/components/ValorantCalculatorPro'
 
 export default function ValorantPage() {
   return (
@@ -39,7 +39,7 @@ export default function ValorantPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16 relative">
         {/* Calculadora */}
         <div className="lg:col-span-2">
-          <ValorantCalculatorNew />
+          <ValorantCalculatorPro />
         </div>
 
         {/* Imagem da Jett */}

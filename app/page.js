@@ -310,20 +310,6 @@ export default async function HomePage() {
       {/* NOVO: Feedbacks Fake */}
       <FakeTestimonials />
 
-      {/* Depoimentos */}
-      <section className="container py-20">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            O que nossos <span className="gamer-gradient bg-clip-text text-transparent">Clientes</span> dizem
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Confira a experiência de quem já alcançou seus objetivos com a gente!
-          </p>
-        </div>
-
-        <TestimonialCarousel testimonials={testimonials} />
-      </section>
-
       {/* Formulário de Depoimento */}
       <section className="container py-20">
         <div className="max-w-2xl mx-auto">
