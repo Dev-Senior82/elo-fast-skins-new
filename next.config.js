@@ -7,6 +7,7 @@ const nextConfig = {
       'static.wikia.nocookie.net',
       'customer-assets.emergentagent.com',
       'hatscripts.github.io',
+      'www.elojobdash.com.br',
     ],
     unoptimized: false,
   },

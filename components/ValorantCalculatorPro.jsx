@@ -10,31 +10,31 @@ import { TrendingUp, Zap } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 
 const valorantRanks = [
-  { value: 'ferro1', label: 'Ferro 1', price: 15, icon: '/emblems/valorant/iron.png' },
-  { value: 'ferro2', label: 'Ferro 2', price: 16, icon: '/emblems/valorant/iron.png' },
-  { value: 'ferro3', label: 'Ferro 3', price: 17, icon: '/emblems/valorant/iron.png' },
-  { value: 'bronze1', label: 'Bronze 1', price: 18, icon: '/emblems/valorant/bronze.png' },
-  { value: 'bronze2', label: 'Bronze 2', price: 19, icon: '/emblems/valorant/bronze.png' },
-  { value: 'bronze3', label: 'Bronze 3', price: 20, icon: '/emblems/valorant/bronze.png' },
-  { value: 'prata1', label: 'Prata 1', price: 22, icon: '/emblems/valorant/silver.png' },
-  { value: 'prata2', label: 'Prata 2', price: 24, icon: '/emblems/valorant/silver.png' },
-  { value: 'prata3', label: 'Prata 3', price: 26, icon: '/emblems/valorant/silver.png' },
-  { value: 'ouro1', label: 'Ouro 1', price: 28, icon: '/emblems/valorant/gold.png' },
-  { value: 'ouro2', label: 'Ouro 2', price: 30, icon: '/emblems/valorant/gold.png' },
-  { value: 'ouro3', label: 'Ouro 3', price: 32, icon: '/emblems/valorant/gold.png' },
-  { value: 'platina1', label: 'Platina 1', price: 35, icon: '/emblems/valorant/platinum.png' },
-  { value: 'platina2', label: 'Platina 2', price: 38, icon: '/emblems/valorant/platinum.png' },
-  { value: 'platina3', label: 'Platina 3', price: 41, icon: '/emblems/valorant/platinum.png' },
-  { value: 'diamante1', label: 'Diamante 1', price: 45, icon: '/emblems/valorant/diamond.png' },
-  { value: 'diamante2', label: 'Diamante 2', price: 49, icon: '/emblems/valorant/diamond.png' },
-  { value: 'diamante3', label: 'Diamante 3', price: 53, icon: '/emblems/valorant/diamond.png' },
-  { value: 'ascendente1', label: 'Ascendente 1', price: 58, icon: '/emblems/valorant/ascendant.png' },
-  { value: 'ascendente2', label: 'Ascendente 2', price: 63, icon: '/emblems/valorant/ascendant.png' },
-  { value: 'ascendente3', label: 'Ascendente 3', price: 68, icon: '/emblems/valorant/ascendant.png' },
-  { value: 'imortal1', label: 'Imortal 1', price: 75, icon: '/emblems/valorant/immortal.png' },
-  { value: 'imortal2', label: 'Imortal 2', price: 82, icon: '/emblems/valorant/immortal.png' },
-  { value: 'imortal3', label: 'Imortal 3', price: 89, icon: '/emblems/valorant/immortal.png' },
-  { value: 'radiante', label: 'Radiante', price: 99, icon: '/emblems/valorant/radiant.png' },
+  { value: 'ferro1', label: 'Ferro 1', price: 15, icon: 'https://www.elojobdash.com.br/emblems/valorant/iron.png' },
+  { value: 'ferro2', label: 'Ferro 2', price: 16, icon: 'https://www.elojobdash.com.br/emblems/valorant/iron.png' },
+  { value: 'ferro3', label: 'Ferro 3', price: 17, icon: 'https://www.elojobdash.com.br/emblems/valorant/iron.png' },
+  { value: 'bronze1', label: 'Bronze 1', price: 18, icon: 'https://www.elojobdash.com.br/emblems/valorant/bronze.png' },
+  { value: 'bronze2', label: 'Bronze 2', price: 19, icon: 'https://www.elojobdash.com.br/emblems/valorant/bronze.png' },
+  { value: 'bronze3', label: 'Bronze 3', price: 20, icon: 'https://www.elojobdash.com.br/emblems/valorant/bronze.png' },
+  { value: 'prata1', label: 'Prata 1', price: 22, icon: 'https://www.elojobdash.com.br/emblems/valorant/silver.png' },
+  { value: 'prata2', label: 'Prata 2', price: 24, icon: 'https://www.elojobdash.com.br/emblems/valorant/silver.png' },
+  { value: 'prata3', label: 'Prata 3', price: 26, icon: 'https://www.elojobdash.com.br/emblems/valorant/silver.png' },
+  { value: 'ouro1', label: 'Ouro 1', price: 28, icon: 'https://www.elojobdash.com.br/emblems/valorant/gold.png' },
+  { value: 'ouro2', label: 'Ouro 2', price: 30, icon: 'https://www.elojobdash.com.br/emblems/valorant/gold.png' },
+  { value: 'ouro3', label: 'Ouro 3', price: 32, icon: 'https://www.elojobdash.com.br/emblems/valorant/gold.png' },
+  { value: 'platina1', label: 'Platina 1', price: 35, icon: 'https://www.elojobdash.com.br/emblems/valorant/platinum.png' },
+  { value: 'platina2', label: 'Platina 2', price: 38, icon: 'https://www.elojobdash.com.br/emblems/valorant/platinum.png' },
+  { value: 'platina3', label: 'Platina 3', price: 41, icon: 'https://www.elojobdash.com.br/emblems/valorant/platinum.png' },
+  { value: 'diamante1', label: 'Diamante 1', price: 45, icon: 'https://www.elojobdash.com.br/emblems/valorant/diamond.png' },
+  { value: 'diamante2', label: 'Diamante 2', price: 49, icon: 'https://www.elojobdash.com.br/emblems/valorant/diamond.png' },
+  { value: 'diamante3', label: 'Diamante 3', price: 53, icon: 'https://www.elojobdash.com.br/emblems/valorant/diamond.png' },
+  { value: 'ascendente1', label: 'Ascendente 1', price: 58, icon: 'https://www.elojobdash.com.br/emblems/valorant/ascendant.png' },
+  { value: 'ascendente2', label: 'Ascendente 2', price: 63, icon: 'https://www.elojobdash.com.br/emblems/valorant/ascendant.png' },
+  { value: 'ascendente3', label: 'Ascendente 3', price: 68, icon: 'https://www.elojobdash.com.br/emblems/valorant/ascendant.png' },
+  { value: 'imortal1', label: 'Imortal 1', price: 75, icon: 'https://www.elojobdash.com.br/emblems/valorant/immortal.png' },
+  { value: 'imortal2', label: 'Imortal 2', price: 82, icon: 'https://www.elojobdash.com.br/emblems/valorant/immortal.png' },
+  { value: 'imortal3', label: 'Imortal 3', price: 89, icon: 'https://www.elojobdash.com.br/emblems/valorant/immortal.png' },
+  { value: 'radiante', label: 'Radiante', price: 99, icon: 'https://www.elojobdash.com.br/emblems/valorant/radiant.png' },
 ]
 
 const valorantServices = [
@@ -128,10 +128,7 @@ export default function ValorantCalculatorPro() {
                   <img
                     src={currentRankData.icon}
                     alt={currentRankData.label}
-                    className="w-32 h-32 object-contain"
-                    onError={(e) => {
-                      e.target.src = 'https://static.wikia.nocookie.net/valorant/images/8/8e/TX_CompetitiveTier_Large_3.png'
-                    }}
+                    className="w-32 h-32 object-contain transition-transform duration-300 hover:scale-110"
                   />
                 </div>
               )}
@@ -141,9 +138,9 @@ export default function ValorantCalculatorPro() {
                     <button
                       key={rank.value}
                       onClick={() => setCurrentRank(rank.value)}
-                      className={`p-3 rounded-lg border-2 text-xs font-semibold transition-all ${
+                      className={`p-3 rounded-lg border-2 text-xs font-semibold transition-all hover:scale-105 ${
                         currentRank === rank.value
-                          ? 'border-red-500 bg-red-500/20'
+                          ? 'border-red-500 bg-red-500/20 scale-105'
                           : 'border-border/40 hover:border-red-500/50'
                       }`}
                     >
@@ -162,10 +159,7 @@ export default function ValorantCalculatorPro() {
                   <img
                     src={desiredRankData.icon}
                     alt={desiredRankData.label}
-                    className="w-32 h-32 object-contain"
-                    onError={(e) => {
-                      e.target.src = 'https://static.wikia.nocookie.net/valorant/images/0/02/TX_CompetitiveTier_Large_27.png'
-                    }}
+                    className="w-32 h-32 object-contain transition-transform duration-300 hover:scale-110"
                   />
                 </div>
               )}
@@ -175,9 +169,9 @@ export default function ValorantCalculatorPro() {
                     <button
                       key={rank.value}
                       onClick={() => setDesiredRank(rank.value)}
-                      className={`p-3 rounded-lg border-2 text-xs font-semibold transition-all ${
+                      className={`p-3 rounded-lg border-2 text-xs font-semibold transition-all hover:scale-105 ${
                         desiredRank === rank.value
-                          ? 'border-red-500 bg-red-500/20'
+                          ? 'border-red-500 bg-red-500/20 scale-105'
                           : 'border-border/40 hover:border-red-500/50'
                       }`}
                     >
