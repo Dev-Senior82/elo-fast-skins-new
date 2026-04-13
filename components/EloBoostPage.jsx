@@ -50,11 +50,46 @@ export default function EloBoostPage({ showHeader = true }) {
   const calculateBasePrice = () => {
     if (!currentRank || !desiredRank) return 0
 
-    // Se desejado é por vitória (Mestre+)
-    if (isWinBased(desiredRank)) {
+    const priceKey = serviceType === 'solo' ? 'solo' : 'duo'
+    const currentIsWinBased = isWinBased(currentRank)
+    const desiredIsWinBased = isWinBased(desiredRank)
+
+    // CASO 1: Elo baixo → Elo alto (ex: Diamante 2 → Mestre)
+    if (!currentIsWinBased && desiredIsWinBased) {
+      if (!currentDivision) return 0
+      
+      let total = 0
+      const currentRankIndex = RANKS.findIndex(r => r.tier === currentRank.tier)
+      const diamante1Index = RANKS.findIndex(r => r.tier === 'DIAMANTE')
+      
+      // Somar divisões restantes do tier atual
+      const currentDivIndex = currentRank.divisions.findIndex(d => d.division === currentDivision.division)
+      for (let i = currentDivIndex; i < currentRank.divisions.length; i++) {
+        total += currentRank.divisions[i][priceKey]
+      }
+      
+      // Somar todos os tiers até Diamante
+      for (let i = currentRankIndex + 1; i <= diamante1Index; i++) {
+        const rank = RANKS[i]
+        if (rank.divisions.length > 0) {
+          rank.divisions.forEach(div => {
+            total += div[priceKey]
+          })
+        }
+      }
+      
+      // DEPOIS somar as vitórias no elo alto
+      total += desiredRank.pricePerWin * winsCount
+      
+      return total
+    }
+
+    // CASO 2: Elo alto → Elo alto (apenas vitórias)
+    if (currentIsWinBased && desiredIsWinBased) {
       return desiredRank.pricePerWin * winsCount
     }
 
+    // CASO 3: Elo baixo → Elo baixo (normal)
     // Verificar se ambos têm divisões selecionadas
     if (!currentDivision || !desiredDivision) return 0
 
@@ -64,9 +99,8 @@ export default function EloBoostPage({ showHeader = true }) {
     if (desiredRankIndex < currentRankIndex) return 0
 
     let total = 0
-    const priceKey = serviceType === 'solo' ? 'solo' : 'duo'
 
-    // Caso 1: Mesmo tier, diferentes divisões
+    // Mesmo tier, diferentes divisões
     if (currentRankIndex === desiredRankIndex) {
       const currentDivIndex = currentRank.divisions.findIndex(d => d.division === currentDivision.division)
       const desiredDivIndex = desiredRank.divisions.findIndex(d => d.division === desiredDivision.division)
@@ -77,7 +111,7 @@ export default function EloBoostPage({ showHeader = true }) {
         total += currentRank.divisions[i][priceKey]
       }
     }
-    // Caso 2: Tiers diferentes
+    // Tiers diferentes
     else {
       // Somar divisões restantes do tier atual
       const currentDivIndex = currentRank.divisions.findIndex(d => d.division === currentDivision.division)
