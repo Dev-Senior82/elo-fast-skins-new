@@ -98,11 +98,6 @@ export default function PriceCalculatorNew() {
     const currentIsHigh = isWinBasedElo(currentElo)
     const desiredIsHigh = isWinBasedElo(desiredElo)
 
-    // Se destino é elo alto (Mestre+), origem também deve ser elo alto
-    if (desiredIsHigh && !currentIsHigh) {
-      return false
-    }
-
     // Se origem é elo alto, destino também deve ser (ou pode ser o mesmo para vitórias)
     if (currentIsHigh && !desiredIsHigh) {
       return false
@@ -113,7 +108,6 @@ export default function PriceCalculatorNew() {
 
   const calculatePrice = () => {
     if (!currentElo || !desiredElo) return 0
-    if (!isValidEloSelection()) return 0
 
     const current = eloTiers.find(e => e.value === currentElo)
     const desired = eloTiers.find(e => e.value === desiredElo)
@@ -122,11 +116,34 @@ export default function PriceCalculatorNew() {
 
     let basePrice = 0
 
-    // Se o destino é elo alto (Mestre+), calcular por vitórias
-    if (isWinBasedElo(desiredElo)) {
+    const currentIsHigh = isWinBasedElo(currentElo)
+    const desiredIsHigh = isWinBasedElo(desiredElo)
+
+    // CASO 1: Elo baixo → Elo alto (ex: Diamante 2 → Mestre)
+    if (!currentIsHigh && desiredIsHigh) {
+      // Calcular caminho até Diamante 1 (último elo antes do Mestre)
+      const currentIndex = eloTiers.indexOf(current)
+      const diamante1Index = eloTiers.findIndex(e => e.value === 'diamante1')
+      
+      // Somar todos os elos até Diamante 1
+      for (let i = currentIndex; i <= diamante1Index; i++) {
+        const elo = eloTiers[i]
+        if (serviceType === 'solo') {
+          basePrice += elo.solo || 0
+        } else {
+          basePrice += elo.duo || 0
+        }
+      }
+      
+      // DEPOIS somar as vitórias no elo alto
+      basePrice += (desired.perWin || 0) * winsCount
+    }
+    // CASO 2: Elo alto → Elo alto (ex: Mestre → Grão-Mestre)
+    else if (currentIsHigh && desiredIsHigh) {
       basePrice = (desired.perWin || 0) * winsCount
-    } else {
-      // Cálculo normal por divisão (até Diamante 1)
+    }
+    // CASO 3: Elo baixo → Elo baixo (normal)
+    else {
       const currentIndex = eloTiers.indexOf(current)
       const desiredIndex = eloTiers.indexOf(desired)
 
@@ -371,8 +388,8 @@ export default function PriceCalculatorNew() {
                     return eloIsHigh
                   }
                   
-                  // Se origem é elo baixo, só mostrar elos baixos (até Diamante 1)
-                  return !eloIsHigh
+                  // Se origem é elo baixo, pode escolher qualquer elo
+                  return true
                 })
                 .map((elo) => (
                   <SelectItem key={elo.value} value={elo.value}>
@@ -383,11 +400,11 @@ export default function PriceCalculatorNew() {
           </Select>
         </div>
 
-        {/* Aviso de elos incompatíveis */}
-        {!isValidEloSelection() && currentElo && desiredElo && (
-          <Card className="bg-red-500/10 border-red-500/20 p-3">
-            <p className="text-xs text-red-400">
-              ⚠️ Elos Mestre, Grão-Mestre e Challenger são calculados por vitórias e não podem ser combinados com elos inferiores.
+        {/* Aviso quando seleciona elo alto a partir de elo baixo */}
+        {!isWinBasedElo(currentElo) && isWinBasedElo(desiredElo) && (
+          <Card className="bg-blue-500/10 border-blue-500/20 p-3">
+            <p className="text-xs text-blue-400">
+              ℹ️ O cálculo incluirá: <strong>seu elo atual até Diamante 1</strong> + <strong>{winsCount} vitórias no {eloTiers.find(e => e.value === desiredElo)?.label}</strong>
             </p>
           </Card>
         )}
