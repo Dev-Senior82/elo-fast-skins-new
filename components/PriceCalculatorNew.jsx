@@ -125,14 +125,11 @@ export default function PriceCalculatorNew() {
       const currentIndex = eloTiers.indexOf(current)
       const diamante1Index = eloTiers.findIndex(e => e.value === 'diamante1')
       
-      // Somar todos os elos até Diamante 1
+      // Somar todos os elos do caminho (do atual ATÉ Diamante 1, incluindo D1)
       for (let i = currentIndex; i <= diamante1Index; i++) {
         const elo = eloTiers[i]
-        if (serviceType === 'solo') {
-          basePrice += elo.solo || 0
-        } else {
-          basePrice += elo.duo || 0
-        }
+        const price = serviceType === 'solo' ? (elo.solo || 0) : (elo.duo || 0)
+        basePrice += price
       }
       
       // DEPOIS somar as vitórias no elo alto
