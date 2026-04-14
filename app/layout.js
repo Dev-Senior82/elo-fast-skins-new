@@ -9,9 +9,24 @@ import { Toaster } from '@/components/ui/toaster'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'Elo Fast Skins - Serviços de Elo Job #1 do Brasil',
-  description: 'Os melhores serviços de Elo Boost, Duo Boost e MD10 para League of Legends. Boosters profissionais, segurança garantida e preços justos.',
-  keywords: 'elo job, elo boost, duo boost, league of legends, lol boost, md10',
+  title: 'Elo Job LoL | Duo Boost | Boost LoL | Coach LoL - Elo Fast',
+  description:
+    'Elo Job LoL barato, Duo Boost, Coach LoL e Boost LoL. Suba de elo rápido com boosters profissionais e segurança garantida.',
+  keywords: [
+    'elo job',
+    'elo job lol',
+    'duo boost',
+    'duo job lol',
+    'boost lol',
+    'coach lol',
+    'subir de elo',
+    'elo job barato',
+    'lol boost',
+    'elo boost brasil'
+  ],
+  icons: {
+    icon: '/favicon.png'
+  }
 }
 
 export default function RootLayout({ children }) {
