@@ -5,7 +5,7 @@ import { useEffect } from "react";
 export const metadata = {
   title: "Elo Job LoL - Subir de Elo Rápido e Seguro",
   description:
-    "Elo Job LoL com boosters profissionais. Suba de elo rápido e seguro.",
+    "Serviço de Elo Job LoL barato e seguro. Suba de elo com boosters profissionais.",
 };
 
 export default function Page() {
